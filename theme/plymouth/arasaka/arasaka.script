@@ -1,0 +1,272 @@
+// ============================================================
+//  ARASAKA // Plymouth boot sequence
+//  Logo com fade + pulso, glitch aleatorio, barra de progresso,
+//  mensagens de status, feixe de varredura e tela de senha.
+// ============================================================
+
+Window.SetBackgroundTopColor(0.0, 0.0, 0.0);
+Window.SetBackgroundBottomColor(0.0, 0.0, 0.0);
+
+W  = Window.GetWidth();
+H  = Window.GetHeight();
+X0 = Window.GetX();
+Y0 = Window.GetY();
+CX = X0 + W / 2;
+CY = Y0 + H / 2 - H * 0.07;
+
+mode = Plymouth.GetMode();
+shutting = 0;
+if (mode == "shutdown" || mode == "reboot") shutting = 1;
+
+t = 0;
+prog = 0;
+prog_target = 0;
+pw_mode = 0;
+glitch_frames = 0;
+status_idx = -1;
+
+// ---------------------------------------------------------------- logo
+glow.image  = Image("glow.png");
+glow.sprite = Sprite(glow.image);
+glow.sprite.SetPosition(CX - glow.image.GetWidth() / 2, CY - glow.image.GetHeight() / 2, 1);
+glow.sprite.SetOpacity(0);
+
+logo.image  = Image("logo.png");
+logo.w = logo.image.GetWidth();
+logo.h = logo.image.GetHeight();
+logo.x = CX - logo.w / 2;
+logo.y = CY - logo.h / 2;
+logo.sprite = Sprite(logo.image);
+logo.sprite.SetPosition(logo.x, logo.y, 3);
+logo.sprite.SetOpacity(0);
+
+glitch[0] = Image("glitch0.png");
+glitch[1] = Image("glitch1.png");
+glitch[2] = Image("glitch2.png");
+gl.sprite = Sprite(glitch[0]);
+gl.sprite.SetPosition(logo.x, logo.y, 4);
+gl.sprite.SetOpacity(0);
+
+// ---------------------------------------------------------------- textos
+title.image  = Image("title.png");
+title.y      = logo.y + logo.h - 24;
+title.sprite = Sprite(title.image);
+title.sprite.SetPosition(CX - title.image.GetWidth() / 2, title.y, 3);
+title.sprite.SetOpacity(0);
+
+kanji.image  = Image("kanji.png");
+kanji.y      = title.y + title.image.GetHeight() + 2;
+kanji.sprite = Sprite(kanji.image);
+kanji.sprite.SetPosition(CX - kanji.image.GetWidth() / 2, kanji.y, 3);
+kanji.sprite.SetOpacity(0);
+
+// ---------------------------------------------------------------- barra
+bar.w = Math.Int(W * 0.24);
+if (bar.w < 260) bar.w = 260;
+bar.x = Math.Int(CX - bar.w / 2);
+bar.y = Math.Int(kanji.y + kanji.image.GetHeight() + 34);
+
+bar.bg = Sprite(Image("bar_bg.png").Scale(bar.w, 2));
+bar.bg.SetPosition(bar.x, bar.y, 3);
+bar.bg.SetOpacity(0);
+
+bar.fgimg = Image("bar_fg.png");
+bar.fg = Sprite(bar.fgimg.Scale(1, 2));
+bar.fg.SetPosition(bar.x, bar.y, 4);
+bar.fg.SetOpacity(0);
+
+tip.image  = Image("bar_tip.png");
+tip.sprite = Sprite(tip.image);
+tip.sprite.SetOpacity(0);
+
+// ---------------------------------------------------------------- status
+if (shutting) {
+  status_count = 3;
+  for (i = 0; i < 3; i++) status_img[i] = Image("down" + i + ".png");
+} else {
+  status_count = 8;
+  for (i = 0; i < 8; i++) status_img[i] = Image("status" + i + ".png");
+}
+status.y = bar.y + 16;
+status.sprite = Sprite();
+status.sprite.SetZ(3);
+
+// ---------------------------------------------------------------- moldura
+footer.image  = Image("footer.png");
+footer.sprite = Sprite(footer.image);
+footer.sprite.SetPosition(CX - footer.image.GetWidth() / 2, Y0 + H - 46, 3);
+footer.sprite.SetOpacity(0);
+
+M = 28;
+corner.tl = Sprite(Image("corner_tl.png"));
+corner.tr = Sprite(Image("corner_tr.png"));
+corner.bl = Sprite(Image("corner_bl.png"));
+corner.br = Sprite(Image("corner_br.png"));
+corner.tl.SetPosition(X0 + M,          Y0 + M,          5);
+corner.tr.SetPosition(X0 + W - M - 44, Y0 + M,          5);
+corner.bl.SetPosition(X0 + M,          Y0 + H - M - 44, 5);
+corner.br.SetPosition(X0 + W - M - 44, Y0 + H - M - 44, 5);
+
+beam.sprite = Sprite(Image("beam.png").Scale(W, 60));
+beam.sprite.SetPosition(X0, Y0, 10);
+beam.sprite.SetOpacity(0.9);
+
+// ---------------------------------------------------------------- senha
+pw.box_image   = Image("pw_box.png");
+pw.box         = Sprite(pw.box_image);
+pw.box_x       = CX - pw.box_image.GetWidth() / 2;
+pw.box_y       = bar.y + 46;
+pw.box.SetPosition(pw.box_x, pw.box_y, 6);
+pw.box.SetOpacity(0);
+pw.label_image = Image("pw_label.png");
+pw.label       = Sprite(pw.label_image);
+pw.label.SetPosition(CX - pw.label_image.GetWidth() / 2, bar.y - 6, 6);
+pw.label.SetOpacity(0);
+pw.prompt      = Sprite();
+pw.prompt.SetZ(6);
+bullet_image   = Image("bullet.png");
+bullet_count   = 0;
+
+fun hide_bullets(from) {
+  for (i = from; i < global.bullet_count; i++) global.bullet[i].SetOpacity(0);
+}
+
+fun display_password(prompt, bullets) {
+  global.pw_mode = 1;
+  pw.box.SetOpacity(1);
+  pw.label.SetOpacity(1);
+  bar.bg.SetOpacity(0);
+  bar.fg.SetOpacity(0);
+  tip.sprite.SetOpacity(0);
+  status.sprite.SetOpacity(0);
+  if (prompt != "") {
+    img = Image.Text(prompt, 0.55, 0.55, 0.6, 1, "Sans 10");
+    pw.prompt.SetImage(img);
+    pw.prompt.SetPosition(CX - img.GetWidth() / 2, pw.box_y + 60, 6);
+    pw.prompt.SetOpacity(1);
+  }
+  n = bullets;
+  if (n > 28) n = 28;
+  for (i = 0; i < n; i++) {
+    if (i >= global.bullet_count) {
+      global.bullet[i] = Sprite(bullet_image);
+      global.bullet_count = i + 1;
+    }
+    global.bullet[i].SetPosition(pw.box_x + 18 + i * 14, pw.box_y + 19, 7);
+    global.bullet[i].SetOpacity(1);
+  }
+  hide_bullets(n);
+}
+
+fun display_question(prompt, entry) {
+  display_password(prompt, 0);
+  img = Image.Text(entry, 0.93, 0.93, 0.95, 1, "Sans 12");
+  pw.prompt.SetImage(img);
+  pw.prompt.SetPosition(pw.box_x + 16, pw.box_y + 14, 7);
+  pw.prompt.SetOpacity(1);
+}
+
+fun display_normal() {
+  global.pw_mode = 0;
+  pw.box.SetOpacity(0);
+  pw.label.SetOpacity(0);
+  pw.prompt.SetOpacity(0);
+  hide_bullets(0);
+}
+
+Plymouth.SetDisplayPasswordFunction(display_password);
+Plymouth.SetDisplayQuestionFunction(display_question);
+Plymouth.SetDisplayNormalFunction(display_normal);
+
+// ---------------------------------------------------------------- mensagens
+msg.sprite = Sprite();
+msg.sprite.SetZ(6);
+fun show_message(text) {
+  img = Image.Text(text, 0.6, 0.6, 0.65, 1, "Sans 10");
+  msg.sprite.SetImage(img);
+  msg.sprite.SetPosition(CX - img.GetWidth() / 2, Y0 + H - 90, 6);
+  msg.sprite.SetOpacity(1);
+}
+Plymouth.SetMessageFunction(show_message);
+
+fun boot_progress(duration, progress) {
+  global.prog_target = progress;
+}
+Plymouth.SetBootProgressFunction(boot_progress);
+
+// ---------------------------------------------------------------- animacao
+fun clamp01(v) {
+  if (v < 0) return 0;
+  if (v > 1) return 1;
+  return v;
+}
+
+fun refresh() {
+  global.t = global.t + 1;
+  fade  = clamp01(global.t / 45);
+  fade2 = clamp01((global.t - 25) / 40);
+  fade3 = clamp01((global.t - 45) / 40);
+
+  glow.sprite.SetOpacity(fade * (0.45 + 0.30 * Math.Sin(global.t * 0.055)));
+  title.sprite.SetOpacity(fade2);
+  kanji.sprite.SetOpacity(fade2);
+  footer.sprite.SetOpacity(fade3);
+
+  // glitch aleatorio do logo
+  if (global.glitch_frames > 0) {
+    global.glitch_frames = global.glitch_frames - 1;
+    gl.sprite.SetX(logo.x + Math.Int((Math.Random() - 0.5) * 14));
+    gl.sprite.SetOpacity(1);
+    logo.sprite.SetOpacity(0.25);
+  } else {
+    gl.sprite.SetOpacity(0);
+    logo.sprite.SetOpacity(fade);
+    if (global.t > 70 && Math.Random() < 0.012) {
+      global.glitch_frames = 3 + Math.Int(Math.Random() * 5);
+      gl.sprite.SetImage(glitch[Math.Int(Math.Random() * 2.99)]);
+    }
+  }
+
+  // feixe de varredura
+  beam.sprite.SetY(Y0 + ((global.t * 5) % (H + 120)) - 60);
+
+  if (global.pw_mode) return;
+
+  // barra de progresso
+  bar.bg.SetOpacity(fade3);
+  bar.fg.SetOpacity(fade3);
+  tip.sprite.SetOpacity(fade3);
+  if (shutting) {
+    p = ((global.t % 150) / 150);
+  } else {
+    global.prog = global.prog + (global.prog_target - global.prog) * 0.06;
+    p = global.prog;
+  }
+  w = Math.Int(bar.w * p);
+  if (w < 1) w = 1;
+  bar.fg.SetImage(bar.fgimg.Scale(w, 2));
+  tip.sprite.SetPosition(bar.x + w - tip.image.GetWidth() / 2, bar.y - 6, 5);
+
+  // mensagem de status
+  if (shutting) {
+    idx = Math.Int(global.t / 120) % status_count;
+  } else {
+    idx = Math.Int(p * (status_count - 0.01));
+  }
+  if (idx != global.status_idx) {
+    global.status_idx = idx;
+    img = status_img[idx];
+    status.sprite.SetImage(img);
+    status.sprite.SetPosition(CX - img.GetWidth() / 2, status.y, 3);
+  }
+  // cursor piscando no status
+  if ((global.t % 50) < 30) status.sprite.SetOpacity(fade3);
+  else status.sprite.SetOpacity(fade3 * 0.55);
+}
+Plymouth.SetRefreshFunction(refresh);
+
+fun quit() {
+  logo.sprite.SetOpacity(1);
+  gl.sprite.SetOpacity(0);
+}
+Plymouth.SetQuitFunction(quit);

@@ -1,0 +1,8 @@
+[Sound Theme]
+Name=Arasaka
+Comment=Arasaka Corporation system sounds
+Inherits=freedesktop
+Directories=stereo
+
+[stereo]
+OutputProfile=stereo

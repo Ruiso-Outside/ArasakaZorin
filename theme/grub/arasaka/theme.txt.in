@@ -1,0 +1,67 @@
+# ARASAKA // GRUB boot theme
+# Os nomes de fonte @...@ sao preenchidos pelo install.sh depois do grub-mkfont.
+
+title-text: ""
+desktop-image: "background.png"
+desktop-color: "#000000"
+terminal-font: "@FONT_MONO@"
+terminal-box: "terminal_box_*.png"
+terminal-left: "10%"
+terminal-top: "12%"
+terminal-width: "80%"
+terminal-height: "76%"
+terminal-border: "2"
+
++ boot_menu {
+  left = 48%
+  top = 30%
+  width = 44%
+  height = 44%
+  item_font = "@FONT_ITEM@"
+  item_color = "#8c8c96"
+  selected_item_font = "@FONT_ITEM_BOLD@"
+  selected_item_color = "#ffffff"
+  item_height = 46
+  item_padding = 18
+  item_spacing = 8
+  icon_width = 0
+  icon_height = 0
+  item_icon_space = 0
+  selected_item_pixmap_style = "select_*.png"
+  scrollbar = true
+  scrollbar_width = 4
+  scrollbar_thumb = "thumb_*.png"
+}
+
++ progress_bar {
+  id = "__timeout__"
+  left = 48%
+  top = 79%
+  width = 44%
+  height = 4
+  show_text = false
+  fg_color = "#e3121f"
+  bg_color = "#24242a"
+  border_color = "#24242a"
+}
+
++ label {
+  id = "__timeout__"
+  left = 48%
+  top = 81%
+  width = 44%
+  align = "left"
+  color = "#8c8c96"
+  font = "@FONT_SMALL@"
+  text = "AUTO BOOT IN %d SECONDS"
+}
+
++ label {
+  left = 48%
+  top = 86%
+  width = 44%
+  align = "left"
+  color = "#55555e"
+  font = "@FONT_SMALL@"
+  text = "[ENTER] BOOT    [E] EDIT    [C] CONSOLE    [ESC] BACK"
+}

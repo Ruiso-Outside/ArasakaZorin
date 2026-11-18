@@ -1,0 +1,117 @@
+/* ============================================================
+   ARASAKA // GTK 4 + libadwaita
+   Instalado em ~/.config/gtk-4.0/gtk.css (libadwaita le esse
+   arquivo por cima do estilo dele).
+   ============================================================ */
+
+@define-color accent_color          #ff3b47;
+@define-color accent_bg_color       #e3121f;
+@define-color accent_fg_color       #ffffff;
+@define-color destructive_color     #ff3b47;
+@define-color destructive_bg_color  #8a0a12;
+@define-color destructive_fg_color  #ffffff;
+@define-color success_color         #c5dccd;
+@define-color warning_color         #ffb347;
+@define-color error_color           #ff3b47;
+
+@define-color window_bg_color       #0a0a0c;
+@define-color window_fg_color       #ececf0;
+@define-color view_bg_color         #0e0e11;
+@define-color view_fg_color         #ececf0;
+@define-color headerbar_bg_color    #050506;
+@define-color headerbar_fg_color    #ececf0;
+@define-color headerbar_border_color #e3121f;
+@define-color headerbar_backdrop_color #050506;
+@define-color headerbar_shade_color rgba(227, 18, 31, 0.45);
+@define-color headerbar_darker_shade_color rgba(227, 18, 31, 0.6);
+@define-color sidebar_bg_color      #050506;
+@define-color sidebar_fg_color      #ececf0;
+@define-color sidebar_backdrop_color #050506;
+@define-color sidebar_shade_color   rgba(0, 0, 0, 0.6);
+@define-color sidebar_border_color  #26262c;
+@define-color secondary_sidebar_bg_color #08080a;
+@define-color secondary_sidebar_fg_color #ececf0;
+@define-color secondary_sidebar_backdrop_color #08080a;
+@define-color secondary_sidebar_border_color #26262c;
+@define-color card_bg_color         #121216;
+@define-color card_fg_color         #ececf0;
+@define-color card_shade_color      rgba(0, 0, 0, 0.6);
+@define-color dialog_bg_color       #0e0e11;
+@define-color dialog_fg_color       #ececf0;
+@define-color popover_bg_color      #0a0a0c;
+@define-color popover_fg_color      #ececf0;
+@define-color popover_shade_color   rgba(0, 0, 0, 0.6);
+@define-color thumbnail_bg_color    #121216;
+@define-color thumbnail_fg_color    #ececf0;
+@define-color shade_color           rgba(0, 0, 0, 0.6);
+@define-color scrollbar_outline_color rgba(0, 0, 0, 0.5);
+
+/* cantos retos, estilo terminal corporativo */
+window, window.csd, window.background, .csd, dialog-host > dialog, sheet, floating-sheet > sheet {
+  border-radius: 0;
+}
+window.csd {
+  box-shadow: 0 0 0 1px rgba(227, 18, 31, 0.45), 0 10px 28px rgba(0, 0, 0, 0.85);
+}
+window.csd:backdrop {
+  box-shadow: 0 0 0 1px #26262c, 0 6px 18px rgba(0, 0, 0, 0.7);
+}
+
+headerbar, .top-bar, toolbarview > .top-bar headerbar {
+  box-shadow: inset 0 -1px rgba(227, 18, 31, 0.55);
+}
+headerbar .title, windowtitle .title {
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+button, entry, spinbutton, dropdown > button, combobox > box > button,
+popover > contents, popover > arrow, .card, list.boxed-list, .boxed-list,
+row, switch, switch > slider, check, scale > trough, scale > trough > slider,
+progressbar > trough, progressbar > trough > progress, levelbar > trough > block,
+tooltip, toast, .osd, menu, .menu, searchbar > revealer > box, banner > revealer > widget,
+viewswitcher button, tabbar tab, scrollbar slider, .pill, button.circular, .navigation-sidebar row,
+preferencesgroup, dialog .dialog-contents, alertdialog > .dialog-contents {
+  border-radius: 0;
+}
+
+button:hover:not(.flat):not(.suggested-action):not(.destructive-action) {
+  box-shadow: inset 0 0 0 1px rgba(227, 18, 31, 0.7);
+}
+button.suggested-action { font-weight: bold; letter-spacing: 1px; }
+
+entry:focus-within, spinbutton:focus-within {
+  outline-color: rgba(227, 18, 31, 0.8);
+}
+
+popover > contents, menu, .menu {
+  border: 1px solid rgba(227, 18, 31, 0.6);
+  box-shadow: 0 0 14px rgba(227, 18, 31, 0.18);
+}
+popover modelbutton:hover, popover row:hover {
+  box-shadow: inset 3px 0 #e3121f;
+}
+
+.navigation-sidebar > row:selected, .navigation-sidebar row:selected {
+  box-shadow: inset 3px 0 #e3121f;
+}
+
+.card, list.boxed-list, .boxed-list {
+  box-shadow: 0 0 0 1px #26262c;
+}
+
+tooltip, tooltip.background {
+  background-color: rgba(0, 0, 0, 0.94);
+  border: 1px solid #e3121f;
+}
+
+progressbar > trough > progress, scale > trough > highlight, levelbar > trough > block.filled {
+  box-shadow: 0 0 6px rgba(227, 18, 31, 0.6);
+}
+
+switch:checked { box-shadow: 0 0 6px rgba(227, 18, 31, 0.5); }
+
+tabbar tab:selected { box-shadow: inset 0 -2px #e3121f; }
+viewswitcher button:checked { box-shadow: inset 0 -2px #e3121f; }
+
+selection { background-color: rgba(227, 18, 31, 0.55); color: #ffffff; }

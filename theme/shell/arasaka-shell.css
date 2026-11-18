@@ -1,0 +1,340 @@
+/* ============================================================
+   ARASAKA // GNOME Shell overrides
+   Usado no tema do shell (painel, menus, overview, notificacoes)
+   e tambem anexado ao tema da tela de login (GDM).
+   ============================================================ */
+
+stage {
+  font-family: "Rajdhani", "Cantarell", "Inter", sans-serif;
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------- painel */
+#panel {
+  background-color: #050506;
+  border-bottom: 1px solid rgba(227, 18, 31, 0.6);
+  box-shadow: 0 1px 10px rgba(227, 18, 31, 0.15);
+}
+#panel .panel-button {
+  color: #ececf0;
+  font-weight: bold;
+  border-radius: 0;
+  -natural-hpadding: 12px;
+}
+#panel .panel-button:hover {
+  background-color: rgba(227, 18, 31, 0.16);
+  box-shadow: inset 0 -2px #e3121f;
+  color: #ffffff;
+}
+#panel .panel-button:active, #panel .panel-button:overview,
+#panel .panel-button:focus, #panel .panel-button:checked {
+  background-color: rgba(227, 18, 31, 0.32);
+  box-shadow: inset 0 -2px #ff2436;
+  color: #ffffff;
+}
+#panel .panel-button .clock {
+  letter-spacing: 2px;
+}
+#panel.unlock-screen, #panel.login-screen, #panel:overview {
+  background-color: transparent;
+  border-bottom: none;
+  box-shadow: none;
+}
+
+/* ---------------------------------------------------------------- menus */
+.popup-menu-boxpointer, .candidate-popup-boxpointer {
+  -arrow-border-radius: 0;
+  -arrow-background-color: transparent;
+}
+.popup-menu-content, .candidate-popup-content {
+  background-color: #0a0a0c;
+  border: 1px solid rgba(227, 18, 31, 0.6);
+  border-radius: 0;
+  box-shadow: 0 0 16px rgba(227, 18, 31, 0.2);
+  color: #ececf0;
+}
+.popup-menu-item {
+  border-radius: 0;
+}
+.popup-menu-item:hover, .popup-menu-item:focus, .popup-menu-item.selected {
+  background-color: rgba(227, 18, 31, 0.24);
+  color: #ffffff;
+  box-shadow: inset 3px 0 #e3121f;
+}
+.popup-menu-item:active, .popup-menu-item:checked {
+  background-color: rgba(227, 18, 31, 0.4);
+  color: #ffffff;
+}
+.popup-separator-menu-item .popup-separator-menu-item-separator {
+  background-color: rgba(227, 18, 31, 0.3);
+}
+.popup-sub-menu {
+  background-color: #050506;
+  border-radius: 0;
+}
+
+/* ---------------------------------------------------------------- configuracoes rapidas */
+.quick-settings {
+  background-color: #0a0a0c;
+  border: 1px solid rgba(227, 18, 31, 0.6);
+  border-radius: 0;
+}
+.quick-toggle, .quick-menu-toggle .quick-toggle, .quick-menu-toggle .quick-toggle-arrow,
+.quick-settings .icon-button, .quick-settings-system-item .icon-button,
+.quick-toggle-menu, .quick-slider .slider-bin {
+  border-radius: 0;
+}
+.quick-toggle, .quick-menu-toggle .quick-toggle-arrow, .quick-settings .icon-button {
+  background-color: #16161a;
+  color: #ececf0;
+  border: 1px solid #26262c;
+}
+.quick-toggle:hover, .quick-menu-toggle .quick-toggle-arrow:hover, .quick-settings .icon-button:hover {
+  background-color: #1f0a0d;
+  border-color: rgba(227, 18, 31, 0.7);
+}
+.quick-toggle:checked, .quick-menu-toggle .quick-toggle:checked,
+.quick-menu-toggle .quick-toggle-arrow:checked {
+  background-color: #e3121f;
+  border-color: #ff2436;
+  color: #ffffff;
+}
+.quick-toggle-menu {
+  background-color: #050506;
+  border: 1px solid rgba(227, 18, 31, 0.35);
+}
+
+.slider {
+  -barlevel-height: 4px;
+  -barlevel-background-color: #2a2a30;
+  -barlevel-active-background-color: #e3121f;
+  -barlevel-overdrive-color: #ff8c42;
+  -slider-handle-radius: 7px;
+  -slider-handle-border-width: 2px;
+  -slider-handle-border-color: #e3121f;
+  color: #ececf0;
+}
+
+.toggle-switch {
+  color: #ececf0;
+}
+
+/* ---------------------------------------------------------------- calendario e notificacoes */
+.datemenu-popover, .message-list, .datemenu-calendar-column { border-radius: 0; }
+.calendar-day-base, .calendar-day, .calendar-day-heading { border-radius: 0; }
+.calendar .calendar-today, .calendar-today {
+  background-color: #e3121f;
+  color: #ffffff;
+  font-weight: bold;
+  border-radius: 0;
+}
+.calendar-day:hover, .calendar-day-base:hover { background-color: rgba(227, 18, 31, 0.24); }
+.events-button, .world-clocks-button, .weather-button, .message-list-placeholder {
+  border-radius: 0;
+}
+.events-button:hover, .world-clocks-button:hover, .weather-button:hover {
+  background-color: rgba(227, 18, 31, 0.18);
+}
+
+.message, .notification-banner, .notification-banner:hover, .notification-banner:focus {
+  background-color: #0b0b0d;
+  border: 1px solid rgba(227, 18, 31, 0.45);
+  border-radius: 0;
+  box-shadow: 0 0 12px rgba(227, 18, 31, 0.15);
+}
+.message:hover, .message:focus { background-color: #1a0709; }
+.message .message-title { color: #ffffff; font-weight: bold; letter-spacing: 1px; }
+.message-close-button, .message-expand-button { border-radius: 0; }
+
+/* ---------------------------------------------------------------- OSD */
+.osd-window, .resize-popup, .osd-monitor-label {
+  background-color: rgba(5, 5, 6, 0.94);
+  border: 1px solid #e3121f;
+  border-radius: 0;
+  box-shadow: 0 0 18px rgba(227, 18, 31, 0.3);
+  color: #ececf0;
+}
+.osd-window .level {
+  -barlevel-background-color: #2a2a30;
+  -barlevel-active-background-color: #e3121f;
+  border-radius: 0;
+}
+
+/* ---------------------------------------------------------------- overview */
+.search-entry {
+  border-radius: 0;
+  background-color: rgba(5, 5, 6, 0.9);
+  border: 1px solid #3a0d12;
+  color: #ececf0;
+  caret-color: #ff2436;
+  selection-background-color: #e3121f;
+}
+.search-entry:focus, .search-entry:hover {
+  border-color: #e3121f;
+  background-color: #050506;
+  box-shadow: 0 0 10px rgba(227, 18, 31, 0.35);
+}
+.search-entry .search-entry-icon { color: #e3121f; }
+
+.dash-background {
+  background-color: rgba(8, 8, 10, 0.92);
+  border: 1px solid rgba(227, 18, 31, 0.35);
+  border-radius: 0;
+}
+.dash-item-container .overview-tile:hover, .dash-item-container .app-well-app:hover .overview-icon,
+.overview-tile:hover, .overview-tile:focus, .app-well-app:hover .overview-icon,
+.app-well-app:focus .overview-icon, .grid-search-result:hover .overview-icon,
+.show-apps:hover .overview-icon, .show-apps:checked .overview-icon {
+  background-color: rgba(227, 18, 31, 0.18);
+  border-radius: 0;
+}
+.app-well-app-running-dot, .app-grid-running-dot {
+  background-color: #e3121f;
+  border-radius: 0;
+  width: 10px;
+  height: 2px;
+}
+.app-folder, .app-folder-dialog, .app-folder-icon {
+  border-radius: 0;
+}
+.app-folder-dialog {
+  background-color: #0a0a0c;
+  border: 1px solid rgba(227, 18, 31, 0.5);
+}
+.page-indicator .page-indicator-icon { border-radius: 0; }
+.page-indicator:checked .page-indicator-icon { background-color: #e3121f; }
+
+.workspace-thumbnail, .workspace-thumbnail-indicator { border-radius: 0; }
+.workspace-thumbnail-indicator { border: 2px solid #e3121f; }
+.window-clone-border { border: 3px solid #e3121f; border-radius: 0; }
+.window-caption {
+  background-color: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(227, 18, 31, 0.5);
+  border-radius: 0;
+  color: #ececf0;
+}
+
+.search-section-content, .list-search-result, .search-provider-icon { border-radius: 0; }
+.list-search-result:hover, .list-search-result:focus, .search-provider-icon:hover {
+  background-color: rgba(227, 18, 31, 0.18);
+}
+
+/* ---------------------------------------------------------------- alt+tab */
+.switcher-list, .workspace-switcher {
+  background-color: #0a0a0c;
+  border: 1px solid rgba(227, 18, 31, 0.6);
+  border-radius: 0;
+  box-shadow: 0 0 18px rgba(227, 18, 31, 0.2);
+}
+.switcher-list .item-box { border-radius: 0; }
+.switcher-list .item-box:selected, .switcher-list .item-box:hover {
+  background-color: rgba(227, 18, 31, 0.3);
+  box-shadow: inset 0 -2px #e3121f;
+}
+.ws-switcher-indicator, .workspace-switcher .ws-switcher-box { border-radius: 0; }
+.ws-switcher-indicator:active { background-color: #e3121f; }
+
+/* ---------------------------------------------------------------- dialogos */
+.modal-dialog, .end-session-dialog, .prompt-dialog, .run-dialog {
+  background-color: #0a0a0c;
+  border: 1px solid #e3121f;
+  border-radius: 0;
+  box-shadow: 0 0 24px rgba(227, 18, 31, 0.3);
+  color: #ececf0;
+}
+.modal-dialog .modal-dialog-content-box { border-radius: 0; }
+.modal-dialog-button-box { background-color: #050506; border-top: 1px solid #26262c; }
+.modal-dialog-button-box .modal-dialog-button, .modal-dialog .button {
+  border-radius: 0;
+  background-color: #16161a;
+  border: 1px solid #26262c;
+}
+.modal-dialog-button-box .modal-dialog-button:hover, .modal-dialog .button:hover {
+  background-color: #1f0a0d;
+  border-color: #e3121f;
+}
+.modal-dialog-button-box .modal-dialog-button:default {
+  background-color: #e3121f;
+  border-color: #ff2436;
+  color: #ffffff;
+}
+.modal-dialog-button-box .modal-dialog-button:destructive-action {
+  background-color: #2a0508;
+  color: #ff3b47;
+}
+
+.button, .icon-button, .message-list-clear-button, .notification-button, .hotplug-notification-item {
+  border-radius: 0;
+}
+.button:focus, .icon-button:focus { box-shadow: inset 0 0 0 1px #e3121f; }
+
+/* ---------------------------------------------------------------- dicas */
+.dash-label, .tooltip, .app-well-app-label {
+  background-color: rgba(0, 0, 0, 0.94);
+  border: 1px solid #e3121f;
+  border-radius: 0;
+  color: #ececf0;
+}
+
+/* ---------------------------------------------------------------- tela de bloqueio / login */
+#lockDialogGroup {
+  background: #000000 url("file:///usr/share/backgrounds/arasaka/arasaka-login.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+.unlock-dialog-clock-time {
+  color: #ffffff;
+  font-weight: bold;
+  letter-spacing: 6px;
+  text-shadow: 0 0 18px rgba(227, 18, 31, 0.8);
+}
+.unlock-dialog-clock-date {
+  color: #e3121f;
+  font-weight: bold;
+  letter-spacing: 4px;
+}
+.unlock-dialog-clock-hint { color: #8c8c96; letter-spacing: 2px; }
+
+.login-dialog-prompt-entry, .unlock-dialog .login-dialog-prompt-entry, .login-dialog StEntry {
+  border-radius: 0;
+  background-color: rgba(0, 0, 0, 0.82);
+  border: 1px solid #e3121f;
+  color: #ececf0;
+  caret-color: #ff2436;
+  box-shadow: 0 0 12px rgba(227, 18, 31, 0.3);
+}
+.login-dialog-prompt-entry:focus { border-color: #ff2436; }
+.login-dialog-prompt-label { color: #e3121f; letter-spacing: 2px; font-weight: bold; }
+.login-dialog-button, .login-dialog .modal-dialog-button, .unlock-dialog .login-dialog-button {
+  border-radius: 0;
+}
+.login-dialog-button.a11y-button, .login-dialog-button.cancel-button,
+.login-dialog-button.switch-user-button, .login-dialog-session-list-button {
+  border-radius: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 1px solid #26262c;
+}
+.login-dialog-button:hover, .login-dialog-session-list-button:hover {
+  background-color: #1f0a0d;
+  border-color: #e3121f;
+}
+.login-dialog-user-list-view .login-dialog-user-list .login-dialog-user-list-item {
+  border-radius: 0;
+}
+.login-dialog-user-list-view .login-dialog-user-list .login-dialog-user-list-item:focus,
+.login-dialog-user-list-view .login-dialog-user-list .login-dialog-user-list-item:hover {
+  background-color: rgba(227, 18, 31, 0.24);
+  box-shadow: inset 3px 0 #e3121f;
+}
+.login-dialog-user-list-item .login-dialog-timed-login-indicator { background-color: #e3121f; }
+.user-icon, .user-widget .user-icon, .login-dialog .user-icon, .unlock-dialog .user-icon {
+  border-radius: 0;
+  border: 2px solid #e3121f;
+  background-color: #0a0a0c;
+}
+.user-widget-label, .login-dialog-username { color: #ffffff; letter-spacing: 2px; font-weight: bold; }
+.login-dialog-message-warning, .login-dialog-message-hint { color: #8c8c96; }
+.login-dialog-message { color: #ff3b47; }
+.login-dialog-banner { color: #ececf0; }
+.login-dialog-logo-bin { padding: 24px 0; }

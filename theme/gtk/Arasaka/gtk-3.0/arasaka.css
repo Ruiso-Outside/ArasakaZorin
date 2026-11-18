@@ -1,0 +1,314 @@
+/* ============================================================
+   ARASAKA // GTK 3 overrides
+   Carregado depois do tema base (ZorinRed-Dark ou Adwaita-dark).
+   ============================================================ */
+
+@define-color ara_red        #e3121f;
+@define-color ara_red_hi     #ff2436;
+@define-color ara_red_dim    #5a080e;
+@define-color ara_bg0        #050506;
+@define-color ara_bg1        #0a0a0c;
+@define-color ara_bg2        #111114;
+@define-color ara_bg3        #18181c;
+@define-color ara_border     #26262c;
+@define-color ara_fg         #ececf0;
+@define-color ara_fg_dim     #8c8c96;
+
+/* nomes que muitos temas/apps consultam */
+@define-color theme_bg_color            @ara_bg1;
+@define-color theme_base_color          @ara_bg2;
+@define-color theme_fg_color            @ara_fg;
+@define-color theme_text_color          @ara_fg;
+@define-color theme_selected_bg_color   @ara_red;
+@define-color theme_selected_fg_color   #ffffff;
+@define-color insensitive_bg_color      @ara_bg1;
+@define-color insensitive_fg_color      #55555e;
+@define-color borders                   @ara_border;
+@define-color accent_color              @ara_red;
+@define-color accent_bg_color           @ara_red;
+@define-color window_bg_color           @ara_bg1;
+@define-color view_bg_color             @ara_bg2;
+@define-color headerbar_bg_color        @ara_bg0;
+
+* { outline-color: alpha(@ara_red, 0.6); }
+
+/* ---------------------------------------------------------------- base */
+window, .background {
+  background-color: @ara_bg1;
+  color: @ara_fg;
+}
+
+.view, iconview, textview text, treeview.view, list, listview, .content-view, flowbox {
+  background-color: @ara_bg2;
+  color: @ara_fg;
+}
+
+*:selected, .view:selected, treeview.view:selected, iconview:selected,
+row:selected, list row:selected, flowboxchild:selected,
+textview text selection, entry selection, label selection, selection {
+  background-color: @ara_red;
+  color: #ffffff;
+}
+
+row:hover:not(:selected) { background-color: alpha(@ara_red, 0.10); }
+
+*:link, link { color: @ara_red_hi; }
+*:visited { color: #c0505a; }
+
+separator { background-color: @ara_border; }
+
+/* ---------------------------------------------------------------- janelas */
+decoration {
+  border-radius: 0;
+  box-shadow: 0 0 0 1px alpha(@ara_red, 0.45), 0 10px 28px rgba(0, 0, 0, 0.85);
+}
+decoration:backdrop {
+  box-shadow: 0 0 0 1px @ara_border, 0 6px 18px rgba(0, 0, 0, 0.7);
+}
+.maximized decoration, .fullscreen decoration, .tiled decoration { box-shadow: none; }
+
+headerbar, .titlebar:not(headerbar), .titlebar headerbar {
+  background-image: none;
+  background-color: @ara_bg0;
+  color: @ara_fg;
+  border: none;
+  border-bottom: 1px solid alpha(@ara_red, 0.55);
+  border-radius: 0;
+  box-shadow: none;
+}
+headerbar:backdrop, .titlebar:backdrop {
+  background-color: @ara_bg0;
+  color: @ara_fg_dim;
+  border-bottom-color: @ara_border;
+}
+headerbar .title, .titlebar .title {
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+headerbar .subtitle { color: @ara_fg_dim; letter-spacing: 1px; }
+
+/* botoes de fechar/maximizar */
+headerbar button.titlebutton, .titlebar button.titlebutton {
+  border-radius: 0;
+  min-width: 22px;
+  min-height: 22px;
+  padding: 2px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: @ara_fg_dim;
+}
+headerbar button.titlebutton:hover { border-color: alpha(@ara_red, 0.6); color: @ara_fg; }
+headerbar button.titlebutton.close:hover,
+.titlebar button.titlebutton.close:hover { background-color: @ara_red; border-color: @ara_red; color: #fff; }
+
+/* ---------------------------------------------------------------- botoes */
+button {
+  border-radius: 0;
+  background-image: none;
+  background-color: @ara_bg3;
+  border: 1px solid @ara_border;
+  color: @ara_fg;
+  box-shadow: none;
+  text-shadow: none;
+  -gtk-icon-shadow: none;
+}
+button:hover {
+  background-color: #1f0a0d;
+  border-color: alpha(@ara_red, 0.75);
+  color: #ffffff;
+}
+button:active, button:checked {
+  background-color: @ara_red;
+  border-color: @ara_red;
+  color: #ffffff;
+}
+button:disabled {
+  background-color: @ara_bg1;
+  border-color: @ara_bg3;
+  color: #4a4a52;
+}
+button.flat, headerbar button:not(.suggested-action):not(.destructive-action):not(.titlebutton) {
+  background-color: transparent;
+  border-color: transparent;
+}
+button.flat:hover, headerbar button:not(.suggested-action):not(.destructive-action):not(.titlebutton):hover {
+  background-color: alpha(@ara_red, 0.14);
+  border-color: alpha(@ara_red, 0.5);
+}
+headerbar button:checked:not(.titlebutton) { background-color: alpha(@ara_red, 0.85); color: #fff; }
+
+button.suggested-action, button.default {
+  background-color: @ara_red;
+  border-color: @ara_red_hi;
+  color: #ffffff;
+  font-weight: bold;
+}
+button.suggested-action:hover { background-color: @ara_red_hi; }
+button.destructive-action {
+  background-color: #2a0508;
+  border-color: @ara_red;
+  color: @ara_red_hi;
+  font-weight: bold;
+}
+button.destructive-action:hover { background-color: @ara_red; color: #fff; }
+
+.linked > button, .linked > entry, .linked > combobox > box > button { border-radius: 0; }
+
+/* ---------------------------------------------------------------- campos */
+entry, spinbutton:not(.vertical), searchbar entry {
+  border-radius: 0;
+  background-image: none;
+  background-color: @ara_bg0;
+  border: 1px solid @ara_border;
+  color: @ara_fg;
+  box-shadow: none;
+  caret-color: @ara_red_hi;
+}
+entry:focus, spinbutton:focus:not(.vertical) {
+  border-color: @ara_red;
+  box-shadow: inset 0 0 0 1px alpha(@ara_red, 0.6);
+}
+entry image { color: @ara_fg_dim; }
+entry progress { border-color: @ara_red; }
+
+/* ---------------------------------------------------------------- menus e popovers */
+menu, .menu, .context-menu, popover.background, popover.menu, .popup menu {
+  background-color: @ara_bg1;
+  border: 1px solid alpha(@ara_red, 0.6);
+  border-radius: 0;
+  box-shadow: 0 0 14px alpha(@ara_red, 0.18);
+  padding: 4px 0;
+}
+popover.background > box, popover.background > stack { border-radius: 0; }
+menu menuitem, .menu menuitem { padding: 6px 12px; color: @ara_fg; }
+menu menuitem:hover, .menu menuitem:hover,
+popover modelbutton:hover, modelbutton.flat:hover {
+  background-color: alpha(@ara_red, 0.25);
+  color: #ffffff;
+  box-shadow: inset 3px 0 @ara_red;
+}
+menu menuitem:disabled { color: #4a4a52; }
+menubar { background-color: @ara_bg0; border-bottom: 1px solid @ara_border; }
+menubar > menuitem:hover { box-shadow: inset 0 -2px @ara_red; color: #fff; }
+
+tooltip, tooltip.background {
+  background-color: rgba(0, 0, 0, 0.94);
+  border: 1px solid @ara_red;
+  border-radius: 0;
+  color: @ara_fg;
+}
+
+/* ---------------------------------------------------------------- barras laterais */
+.sidebar, placessidebar, placessidebar list, stacksidebar, stacksidebar list,
+.navigation-sidebar {
+  background-color: @ara_bg0;
+  border-color: @ara_border;
+}
+placessidebar row:selected, stacksidebar row:selected, .sidebar row:selected {
+  background-color: alpha(@ara_red, 0.22);
+  color: #ffffff;
+  box-shadow: inset 3px 0 @ara_red;
+}
+
+/* ---------------------------------------------------------------- abas */
+notebook > header { background-color: @ara_bg0; border-color: @ara_border; }
+notebook > header tab { border-radius: 0; color: @ara_fg_dim; }
+notebook > header tab:hover { color: @ara_fg; box-shadow: inset 0 -2px alpha(@ara_red, 0.45); }
+notebook > header tab:checked { color: #ffffff; box-shadow: inset 0 -3px @ara_red; }
+notebook > stack:not(:only-child) { background-color: @ara_bg1; }
+
+stackswitcher > button:checked, .stack-switcher > button:checked {
+  background-color: alpha(@ara_red, 0.2);
+  box-shadow: inset 0 -2px @ara_red;
+  color: #fff;
+}
+
+/* ---------------------------------------------------------------- controles */
+switch {
+  border-radius: 0;
+  background-color: @ara_bg3;
+  border: 1px solid @ara_border;
+}
+switch:checked { background-color: @ara_red; border-color: @ara_red_hi; }
+switch slider {
+  border-radius: 0;
+  background-image: none;
+  background-color: @ara_fg;
+  border: 1px solid #000;
+  box-shadow: none;
+}
+
+check, radio {
+  background-image: none;
+  background-color: @ara_bg0;
+  border: 1px solid #4a4a52;
+  color: transparent;
+}
+check { border-radius: 0; }
+check:checked, radio:checked, check:indeterminate {
+  background-color: @ara_red;
+  border-color: @ara_red_hi;
+  color: #ffffff;
+}
+check:hover, radio:hover { border-color: @ara_red; }
+
+scale trough, progressbar trough, levelbar trough {
+  border-radius: 0;
+  background-color: @ara_bg3;
+  border: none;
+}
+scale highlight, progressbar progress, levelbar block.filled, levelbar block.high {
+  border-radius: 0;
+  background-image: none;
+  background-color: @ara_red;
+  border: none;
+  box-shadow: 0 0 6px alpha(@ara_red, 0.6);
+}
+levelbar block.low { background-color: #ff8c42; }
+scale slider {
+  border-radius: 0;
+  background-image: none;
+  background-color: @ara_fg;
+  border: 1px solid @ara_red;
+  box-shadow: none;
+}
+
+scrollbar { background-color: transparent; border: none; }
+scrollbar slider {
+  border-radius: 0;
+  background-color: #3a3a42;
+  min-width: 6px;
+  min-height: 6px;
+  border: none;
+}
+scrollbar slider:hover { background-color: alpha(@ara_red, 0.75); }
+scrollbar slider:active { background-color: @ara_red; }
+
+/* ---------------------------------------------------------------- listas, cabecalhos */
+treeview.view header button, columnview > header > button {
+  background-color: @ara_bg0;
+  border-color: @ara_border;
+  color: @ara_fg_dim;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+infobar.info > revealer > box, infobar.warning > revealer > box, infobar.error > revealer > box {
+  background-color: #1f0a0d;
+  border-bottom: 1px solid @ara_red;
+}
+
+frame > border, .frame { border-color: @ara_border; border-radius: 0; }
+
+/* ---------------------------------------------------------------- dialogos */
+messagedialog.background, dialog.background { background-color: @ara_bg1; }
+messagedialog .titlebar { border-bottom: none; }
+messagedialog .dialog-action-area button { border-radius: 0; }
+
+/* ---------------------------------------------------------------- terminal (vte) */
+vte-terminal { padding: 6px 8px; }
+
+/* ---------------------------------------------------------------- nautilus 3 / zorin apps */
+.nautilus-window .path-bar button:checked,
+.path-bar button:checked { box-shadow: inset 0 -2px @ara_red; background-color: transparent; color: #fff; }
+.floating-bar { background-color: #000; border: 1px solid @ara_red; border-radius: 0; }

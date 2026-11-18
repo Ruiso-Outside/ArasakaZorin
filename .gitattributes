@@ -1,0 +1,6 @@
+* text=auto eol=lf
+*.png binary
+*.ttf binary
+*.wav binary
+*.pf2 binary
+Arasaka-Cursors/cursors/* binary

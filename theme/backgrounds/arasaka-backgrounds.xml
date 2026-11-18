@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE wallpapers SYSTEM "gnome-wp-list.dtd">
+<wallpapers>
+  <wallpaper deleted="false">
+    <name>Arasaka Core</name>
+    <filename>/usr/share/backgrounds/arasaka/arasaka-core.png</filename>
+    <filename-dark>/usr/share/backgrounds/arasaka/arasaka-core.png</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#000000</pcolor>
+    <scolor>#000000</scolor>
+  </wallpaper>
+  <wallpaper deleted="false">
+    <name>Arasaka Crimson</name>
+    <filename>/usr/share/backgrounds/arasaka/arasaka-crimson.png</filename>
+    <filename-dark>/usr/share/backgrounds/arasaka/arasaka-crimson.png</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#000000</pcolor>
+    <scolor>#000000</scolor>
+  </wallpaper>
+  <wallpaper deleted="false">
+    <name>Arasaka Glitch</name>
+    <filename>/usr/share/backgrounds/arasaka/arasaka-glitch.png</filename>
+    <filename-dark>/usr/share/backgrounds/arasaka/arasaka-glitch.png</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#000000</pcolor>
+    <scolor>#000000</scolor>
+  </wallpaper>
+  <wallpaper deleted="false">
+    <name>Arasaka HUD</name>
+    <filename>/usr/share/backgrounds/arasaka/arasaka-hud.png</filename>
+    <filename-dark>/usr/share/backgrounds/arasaka/arasaka-hud.png</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#000000</pcolor>
+    <scolor>#000000</scolor>
+  </wallpaper>
+  <wallpaper deleted="false">
+    <name>Arasaka Secure Access</name>
+    <filename>/usr/share/backgrounds/arasaka/arasaka-login.png</filename>
+    <filename-dark>/usr/share/backgrounds/arasaka/arasaka-login.png</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#000000</pcolor>
+    <scolor>#000000</scolor>
+  </wallpaper>
+</wallpapers>
