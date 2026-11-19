@@ -1,0 +1,31 @@
+# Publica uma versão quando uma tag vX.Y.Z é enviada (git tag v1.2.3 && git push origin v1.2.3).
+# A Arasaka Central lê os Releases deste repositório e oferece a atualização sozinha.
+name: Release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confere se a tag bate com a versão do código
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          CODE="$(head -1 VERSION)"
+          echo "tag: $TAG · código: $CODE"
+          [ "$TAG" = "$CODE" ] || { echo "::error::A tag v$TAG não bate com a versão do código ($CODE). Atualize a versão antes de criar a tag."; exit 1; }
+      - name: Monta os pacotes
+        run: |
+          NAME=ArasakaZorin; V="$GITHUB_REF_NAME"
+          mkdir -p out "stage/$NAME"
+          git archive HEAD | tar -x -C "stage/$NAME"
+          rm -rf "stage/$NAME/preview" "stage/$NAME/.github" "stage/$NAME/build/preview"
+          tar -C stage -czf "out/$NAME-$V-linux.tar.gz" "$NAME"
+          ls -la out
+      - name: Cria o Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" out/* --title "ARASAKA ZORIN $GITHUB_REF_NAME" --generate-notes

@@ -688,4 +688,6 @@ branding
 grub
 plymouth_theme
 fx
+# versao instalada (a Arasaka Central le daqui para saber se ha atualizacao)
+[ -f "$DIR/VERSION" ] && sudo install -m644 "$DIR/VERSION" "$SHARE/VERSION"
 finish
