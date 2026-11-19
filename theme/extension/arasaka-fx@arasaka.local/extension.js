@@ -242,6 +242,10 @@ export default class ArasakaFx extends Extension {
             this._rebuild();
         });
         this._rebuild();
+        // logo Arasaka no botão do menu do Zorin (as outras extensões podem carregar depois desta)
+        this._branded = new Map();
+        this._sig.push([Main.extensionManager, Main.extensionManager.connect('extension-state-changed', () => this._brandSoon())]);
+        this._brandSoon();
         this._selfTest();
     }
 
@@ -254,10 +258,63 @@ export default class ArasakaFx extends Extension {
             this._monitor = null;
         }
         this._clear();
+        this._unbrand();
+        if (this._brandTimer) {
+            GLib.source_remove(this._brandTimer);
+            this._brandTimer = 0;
+        }
         if (this._testTimer) {
             GLib.source_remove(this._testTimer);
             this._testTimer = 0;
         }
+    }
+
+    // ---------------------------------------------------------------- logo no botão do menu
+    _brandSoon() {
+        if (this._brandTimer)
+            GLib.source_remove(this._brandTimer);
+        let tries = 0;
+        this._brandTimer = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1500, () => {
+            this._brand();
+            tries++;
+            if (tries < 8)
+                return GLib.SOURCE_CONTINUE; // o painel do Zorin pode ser montado alguns segundos depois
+            this._brandTimer = 0;
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+
+    _isZorinLogo(gicon) {
+        return gicon instanceof Gio.FileIcon && /zorin-icon-symbolic\.svg$/.test(gicon.get_file().get_path() ?? '');
+    }
+
+    _brand() {
+        const ours = Gio.FileIcon.new(this.dir.get_child('arasaka-symbolic.svg'));
+        const walk = actor => {
+            if (actor instanceof St.Icon && !this._branded.has(actor) && this._isZorinLogo(actor.gicon)) {
+                const original = actor.gicon;
+                actor.gicon = ours;
+                // se o menu do Zorin trocar o ícone de novo (configuração mudou), volta o Arasaka
+                const id = actor.connect('notify::gicon', () => {
+                    if (this._isZorinLogo(actor.gicon))
+                        actor.gicon = ours;
+                });
+                const did = actor.connect('destroy', () => this._branded.delete(actor));
+                this._branded.set(actor, {original, ids: [id, did]});
+            }
+            for (const c of actor.get_children())
+                walk(c);
+        };
+        walk(Main.layoutManager.uiGroup);
+    }
+
+    _unbrand() {
+        for (const [actor, {original, ids}] of this._branded ?? []) {
+            for (const id of ids)
+                actor.disconnect(id);
+            actor.gicon = original;
+        }
+        this._branded = new Map();
     }
 
     _readConfig() {
@@ -375,6 +432,8 @@ export default class ArasakaFx extends Extension {
                     // configuração mudada com a sessão rodando (como o comando arasaka-fx faz)
                     const count = () => `fundo=${Main.layoutManager._backgroundGroup.get_children().filter(a => a instanceof BackgroundFx).length} crt=${Main.uiGroup.get_children().filter(a => a instanceof CrtFx).length}`;
                     const before = count();
+                    const brandedBefore = this._branded.size;
+                    await shot('7-taskbar');
                     GLib.mkdir_with_parents(GLib.path_get_dirname(CONFIG), 0o700);
                     GLib.file_set_contents(CONFIG, '{"crt": false}');
                     await wait(1500);
@@ -385,7 +444,7 @@ export default class ArasakaFx extends Extension {
                     const locked = count();
                     Main.sessionMode.popMode('unlock-dialog');
                     await wait(1200);
-                    log(`ok | antes ${before} | config crt=false ${afterCfg} | bloqueado ${locked} | desbloqueado ${count()}`);
+                    log(`ok | logo no menu: ${brandedBefore} | antes ${before} | config crt=false ${afterCfg} | bloqueado ${locked} | desbloqueado ${count()}`);
                 } catch (e) {
                     log(`ERRO ${e}\n${e.stack}`);
                 }

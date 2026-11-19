@@ -1,7 +1,12 @@
 // ============================================================
-//  ARASAKA // Plymouth boot sequence
-//  Logo com fade + pulso, glitch aleatorio, barra de progresso,
-//  mensagens de status, feixe de varredura e tela de senha.
+//  ARASAKA // Plymouth: inicialização e desligamento
+//
+//  Ligando:    monitor CRT ligando (ponto de luz -> linha -> o logo abre na vertical com clarão),
+//              aberração cromática que assenta, anéis de HUD girando, brilho pulsando,
+//              scanner passando pelo logo, barra fina com ponta luminosa e porcentagem.
+//  Desligando: o logo dá um último glitch e é esmagado numa linha e num ponto, como uma TV de tubo
+//              desligando; depois fica só "ARASAKA // OFFLINE".
+//  Tudo foi desenhado para 1080p (build/build_assets.py) e é escalado para a tela.
 // ============================================================
 
 Window.SetBackgroundTopColor(0.0, 0.0, 0.0);
@@ -11,8 +16,9 @@ W  = Window.GetWidth();
 H  = Window.GetHeight();
 X0 = Window.GetX();
 Y0 = Window.GetY();
+SC = H / 1080;
 CX = X0 + W / 2;
-CY = Y0 + H / 2 - H * 0.07;
+CY = Y0 + H / 2 - H * 0.12;
 
 mode = Plymouth.GetMode();
 shutting = 0;
@@ -22,64 +28,168 @@ t = 0;
 prog = 0;
 prog_target = 0;
 pw_mode = 0;
-glitch_frames = 0;
+glitch_left = 0;
+next_glitch = 160;
 status_idx = -1;
 
-// ---------------------------------------------------------------- logo
-glow.image  = Image("glow.png");
-glow.sprite = Sprite(glow.image);
-glow.sprite.SetPosition(CX - glow.image.GetWidth() / 2, CY - glow.image.GetHeight() / 2, 1);
-glow.sprite.SetOpacity(0);
+fun clamp01(v) {
+  if (v < 0) return 0;
+  if (v > 1) return 1;
+  return v;
+}
+fun ease_out(u) { u = clamp01(u); return 1 - (1 - u) * (1 - u) * (1 - u); }
+fun ease_in(u) { u = clamp01(u); return u * u * u; }
+fun ease_back(u) {
+  u = clamp01(u);
+  c = 1.9;
+  return 1 + (c + 1) * (u - 1) * (u - 1) * (u - 1) + c * (u - 1) * (u - 1);
+}
+fun sc(img) { return img.Scale(Math.Int(img.GetWidth() * SC), Math.Int(img.GetHeight() * SC)); }
+fun place(sprite, img, cx, cy, z) {
+  sprite.SetImage(img);
+  sprite.SetPosition(Math.Int(cx - img.GetWidth() / 2), Math.Int(cy - img.GetHeight() / 2), z);
+}
 
-logo.image  = Image("logo.png");
-logo.w = logo.image.GetWidth();
-logo.h = logo.image.GetHeight();
-logo.x = CX - logo.w / 2;
-logo.y = CY - logo.h / 2;
-logo.sprite = Sprite(logo.image);
-logo.sprite.SetPosition(logo.x, logo.y, 3);
+// ---------------------------------------------------------------- fundo
+bg.sprite = Sprite(Image("bg.png").Scale(W, H));
+bg.sprite.SetPosition(X0, Y0, 0);
+bg.sprite.SetOpacity(0);
+
+// ---------------------------------------------------------------- logo (escalado uma vez para a tela)
+logo.base = Image("logo.png");
+logo.img  = sc(logo.base);
+logo.w    = logo.img.GetWidth();
+logo.h    = logo.img.GetHeight();
+logo.sprite = Sprite();
+place(logo.sprite, logo.img, CX, CY, 5);
 logo.sprite.SetOpacity(0);
 
-glitch[0] = Image("glitch0.png");
-glitch[1] = Image("glitch1.png");
-glitch[2] = Image("glitch2.png");
-gl.sprite = Sprite(glitch[0]);
-gl.sprite.SetPosition(logo.x, logo.y, 4);
-gl.sprite.SetOpacity(0);
+hot.base = Image("logo_hot.png");
+hot.img  = sc(hot.base);
+hot.sprite = Sprite();
+place(hot.sprite, hot.img, CX, CY, 6);
+hot.sprite.SetOpacity(0);
+
+cyan.img = sc(Image("logo_c.png"));
+cyan.sprite = Sprite();
+place(cyan.sprite, cyan.img, CX, CY, 4);
+cyan.sprite.SetOpacity(0);
+
+glow.sprite = Sprite();
+place(glow.sprite, sc(Image("glow.png")), CX, CY, 2);
+glow.sprite.SetOpacity(0);
+
+// ---------------------------------------------------------------- anéis de HUD (quadros girados prontos)
+for (i = 0; i < 12; i++) {
+  n = "" + i;
+  if (i < 10) n = "0" + i;
+  ringa[i] = sc(Image("ringa" + n + ".png"));
+}
+for (i = 0; i < 6; i++) ringb[i] = sc(Image("ringb" + i + ".png"));
+ra.sprite = Sprite();
+place(ra.sprite, ringa[0], CX, CY, 3);
+ra.sprite.SetOpacity(0);
+rb.sprite = Sprite();
+place(rb.sprite, ringb[0], CX, CY, 3);
+rb.sprite.SetOpacity(0);
+
+// ---------------------------------------------------------------- CRT: ponto e linha de luz
+dot.img = sc(Image("dot.png"));
+dot.sprite = Sprite();
+place(dot.sprite, dot.img, CX, CY, 8);
+dot.sprite.SetOpacity(0);
+
+line.base = Image("line.png");
+line.h    = Math.Int(60 * SC);
+line.full = Math.Int(logo.w * 1.5);
+line.sprite = Sprite();
+line.sprite.SetOpacity(0);
+fun show_line(w, op) {
+  if (w < 2) w = 2;
+  img = line.base.Scale(Math.Int(w), line.h);
+  place(line.sprite, img, CX, CY, 8);
+  line.sprite.SetOpacity(op);
+}
+
+// ---------------------------------------------------------------- scanner (linha fina pelo logo)
+beam.img = Image("beam.png").Scale(Math.Int(logo.w * 1.25), Math.Int(24 * SC));
+beam.sprite = Sprite(beam.img);
+beam.sprite.SetOpacity(0);
+beam.sprite.SetZ(7);
 
 // ---------------------------------------------------------------- textos
-title.image  = Image("title.png");
-title.y      = logo.y + logo.h - 24;
-title.sprite = Sprite(title.image);
-title.sprite.SetPosition(CX - title.image.GetWidth() / 2, title.y, 3);
+title.img = sc(Image("title.png"));
+title.y   = CY + 312 * SC + 46 * SC;  // abaixo do anel de fora (raio 310 em 1080p)
+title.sprite = Sprite();
+place(title.sprite, title.img, CX, title.y, 5);
 title.sprite.SetOpacity(0);
 
-kanji.image  = Image("kanji.png");
-kanji.y      = title.y + title.image.GetHeight() + 2;
-kanji.sprite = Sprite(kanji.image);
-kanji.sprite.SetPosition(CX - kanji.image.GetWidth() / 2, kanji.y, 3);
+kanji.img = sc(Image("kanji.png"));
+kanji.y   = title.y + title.img.GetHeight() / 2 + 22 * SC;
+kanji.sprite = Sprite();
+place(kanji.sprite, kanji.img, CX, kanji.y, 5);
 kanji.sprite.SetOpacity(0);
 
-// ---------------------------------------------------------------- barra
-bar.w = Math.Int(W * 0.24);
+motto.img = sc(Image("motto.png"));
+motto.sprite = Sprite();
+place(motto.sprite, motto.img, CX, kanji.y + 30 * SC, 5);
+motto.sprite.SetOpacity(0);
+
+footer.img = Image("footer.png");
+footer.sprite = Sprite();
+place(footer.sprite, footer.img, CX, Y0 + H - 40, 5);
+footer.sprite.SetOpacity(0);
+
+offline.img = sc(Image("offline.png"));
+offline.sprite = Sprite();
+place(offline.sprite, offline.img, CX, CY, 9);
+offline.sprite.SetOpacity(0);
+
+// ---------------------------------------------------------------- barra, porcentagem e status
+bar.w = Math.Int(W * 0.22);
 if (bar.w < 260) bar.w = 260;
 bar.x = Math.Int(CX - bar.w / 2);
-bar.y = Math.Int(kanji.y + kanji.image.GetHeight() + 34);
-
+bar.y = Math.Int(kanji.y + 76 * SC);
 bar.bg = Sprite(Image("bar_bg.png").Scale(bar.w, 2));
-bar.bg.SetPosition(bar.x, bar.y, 3);
+bar.bg.SetPosition(bar.x, bar.y, 5);
 bar.bg.SetOpacity(0);
-
 bar.fgimg = Image("bar_fg.png");
 bar.fg = Sprite(bar.fgimg.Scale(1, 2));
-bar.fg.SetPosition(bar.x, bar.y, 4);
+bar.fg.SetPosition(bar.x, bar.y, 6);
 bar.fg.SetOpacity(0);
-
-tip.image  = Image("bar_tip.png");
-tip.sprite = Sprite(tip.image);
+tip.img = Image("bar_tip.png");
+tip.sprite = Sprite(tip.img);
 tip.sprite.SetOpacity(0);
 
-// ---------------------------------------------------------------- status
+for (i = 0; i < 10; i++) digit[i] = Image("d" + i + ".png");
+pct.img = Image("pct.png");
+for (i = 0; i < 3; i++) { num[i] = Sprite(); num[i].SetZ(6); num[i].SetOpacity(0); }
+pct.sprite = Sprite(pct.img);
+pct.sprite.SetOpacity(0);
+pct.sprite.SetZ(6);
+fun show_percent(p, op) {
+  v = Math.Int(p * 100 + 0.5);
+  if (v > 100) v = 100;
+  d[0] = Math.Int(v / 100);
+  d[1] = Math.Int(v / 10) % 10;
+  d[2] = v % 10;
+  first = 2;
+  if (v >= 10) first = 1;
+  if (v >= 100) first = 0;
+  x = bar.x + bar.w + 14;
+  for (i = 0; i < 3; i++) {
+    if (i < first) num[i].SetOpacity(0);
+    else {
+      num[i].SetImage(digit[d[i]]);
+      num[i].SetPosition(x, bar.y - digit[0].GetHeight() / 2, 6);
+      num[i].SetOpacity(op);
+      x = x + digit[0].GetWidth() - 6;
+    }
+  }
+  pct.sprite.SetPosition(x, bar.y - pct.img.GetHeight() / 2, 6);
+  pct.sprite.SetOpacity(op);
+}
+
 if (shutting) {
   status_count = 3;
   for (i = 0; i < 3; i++) status_img[i] = Image("down" + i + ".png");
@@ -87,16 +197,12 @@ if (shutting) {
   status_count = 8;
   for (i = 0; i < 8; i++) status_img[i] = Image("status" + i + ".png");
 }
-status.y = bar.y + 16;
+status.y = bar.y + 24 * SC;
 status.sprite = Sprite();
-status.sprite.SetZ(3);
+status.sprite.SetZ(5);
+status.sprite.SetOpacity(0);
 
 // ---------------------------------------------------------------- moldura
-footer.image  = Image("footer.png");
-footer.sprite = Sprite(footer.image);
-footer.sprite.SetPosition(CX - footer.image.GetWidth() / 2, Y0 + H - 46, 3);
-footer.sprite.SetOpacity(0);
-
 M = 28;
 corner.tl = Sprite(Image("corner_tl.png"));
 corner.tr = Sprite(Image("corner_tr.png"));
@@ -106,26 +212,26 @@ corner.tl.SetPosition(X0 + M,          Y0 + M,          5);
 corner.tr.SetPosition(X0 + W - M - 44, Y0 + M,          5);
 corner.bl.SetPosition(X0 + M,          Y0 + H - M - 44, 5);
 corner.br.SetPosition(X0 + W - M - 44, Y0 + H - M - 44, 5);
+fun corners(op) {
+  corner.tl.SetOpacity(op); corner.tr.SetOpacity(op); corner.bl.SetOpacity(op); corner.br.SetOpacity(op);
+}
+corners(0);
 
-beam.sprite = Sprite(Image("beam.png").Scale(W, 60));
-beam.sprite.SetPosition(X0, Y0, 10);
-beam.sprite.SetOpacity(0.9);
-
-// ---------------------------------------------------------------- senha
-pw.box_image   = Image("pw_box.png");
-pw.box         = Sprite(pw.box_image);
-pw.box_x       = CX - pw.box_image.GetWidth() / 2;
-pw.box_y       = bar.y + 46;
-pw.box.SetPosition(pw.box_x, pw.box_y, 6);
+// ---------------------------------------------------------------- senha (disco criptografado)
+pw.box_image = Image("pw_box.png");
+pw.box       = Sprite(pw.box_image);
+pw.box_x     = CX - pw.box_image.GetWidth() / 2;
+pw.box_y     = bar.y + 10;
+pw.box.SetPosition(pw.box_x, pw.box_y, 10);
 pw.box.SetOpacity(0);
 pw.label_image = Image("pw_label.png");
 pw.label       = Sprite(pw.label_image);
-pw.label.SetPosition(CX - pw.label_image.GetWidth() / 2, bar.y - 6, 6);
+pw.label.SetPosition(CX - pw.label_image.GetWidth() / 2, pw.box_y - 32, 10);
 pw.label.SetOpacity(0);
-pw.prompt      = Sprite();
-pw.prompt.SetZ(6);
-bullet_image   = Image("bullet.png");
-bullet_count   = 0;
+pw.prompt = Sprite();
+pw.prompt.SetZ(10);
+bullet_image = Image("bullet.png");
+bullet_count = 0;
 
 fun hide_bullets(from) {
   for (i = from; i < global.bullet_count; i++) global.bullet[i].SetOpacity(0);
@@ -139,10 +245,11 @@ fun display_password(prompt, bullets) {
   bar.fg.SetOpacity(0);
   tip.sprite.SetOpacity(0);
   status.sprite.SetOpacity(0);
+  show_percent(0, 0);
   if (prompt != "") {
     img = Image.Text(prompt, 0.55, 0.55, 0.6, 1, "Sans 10");
     pw.prompt.SetImage(img);
-    pw.prompt.SetPosition(CX - img.GetWidth() / 2, pw.box_y + 60, 6);
+    pw.prompt.SetPosition(CX - img.GetWidth() / 2, pw.box_y + 60, 10);
     pw.prompt.SetOpacity(1);
   }
   n = bullets;
@@ -152,7 +259,7 @@ fun display_password(prompt, bullets) {
       global.bullet[i] = Sprite(bullet_image);
       global.bullet_count = i + 1;
     }
-    global.bullet[i].SetPosition(pw.box_x + 18 + i * 14, pw.box_y + 19, 7);
+    global.bullet[i].SetPosition(pw.box_x + 18 + i * 14, pw.box_y + 19, 11);
     global.bullet[i].SetOpacity(1);
   }
   hide_bullets(n);
@@ -162,7 +269,7 @@ fun display_question(prompt, entry) {
   display_password(prompt, 0);
   img = Image.Text(entry, 0.93, 0.93, 0.95, 1, "Sans 12");
   pw.prompt.SetImage(img);
-  pw.prompt.SetPosition(pw.box_x + 16, pw.box_y + 14, 7);
+  pw.prompt.SetPosition(pw.box_x + 16, pw.box_y + 14, 11);
   pw.prompt.SetOpacity(1);
 }
 
@@ -178,13 +285,12 @@ Plymouth.SetDisplayPasswordFunction(display_password);
 Plymouth.SetDisplayQuestionFunction(display_question);
 Plymouth.SetDisplayNormalFunction(display_normal);
 
-// ---------------------------------------------------------------- mensagens
 msg.sprite = Sprite();
-msg.sprite.SetZ(6);
+msg.sprite.SetZ(10);
 fun show_message(text) {
   img = Image.Text(text, 0.6, 0.6, 0.65, 1, "Sans 10");
   msg.sprite.SetImage(img);
-  msg.sprite.SetPosition(CX - img.GetWidth() / 2, Y0 + H - 90, 6);
+  msg.sprite.SetPosition(CX - img.GetWidth() / 2, Y0 + H - 90, 10);
   msg.sprite.SetOpacity(1);
 }
 Plymouth.SetMessageFunction(show_message);
@@ -194,79 +300,224 @@ fun boot_progress(duration, progress) {
 }
 Plymouth.SetBootProgressFunction(boot_progress);
 
-// ---------------------------------------------------------------- animacao
-fun clamp01(v) {
-  if (v < 0) return 0;
-  if (v > 1) return 1;
-  return v;
-}
-
-fun refresh() {
-  global.t = global.t + 1;
-  fade  = clamp01(global.t / 45);
-  fade2 = clamp01((global.t - 25) / 40);
-  fade3 = clamp01((global.t - 45) / 40);
-
-  glow.sprite.SetOpacity(fade * (0.45 + 0.30 * Math.Sin(global.t * 0.055)));
-  title.sprite.SetOpacity(fade2);
-  kanji.sprite.SetOpacity(fade2);
-  footer.sprite.SetOpacity(fade3);
-
-  // glitch aleatorio do logo
-  if (global.glitch_frames > 0) {
-    global.glitch_frames = global.glitch_frames - 1;
-    gl.sprite.SetX(logo.x + Math.Int((Math.Random() - 0.5) * 14));
-    gl.sprite.SetOpacity(1);
-    logo.sprite.SetOpacity(0.25);
+// ---------------------------------------------------------------- partes da animação
+// logo "aberto" na vertical (k: 0 = linha, 1 = normal); aberração cromática "ab" em pixels
+fun draw_logo(k, ab, hot_op, op) {
+  if (k >= 0.999) {
+    place(logo.sprite, logo.img, CX + ab * 0.35, CY, 5);
   } else {
-    gl.sprite.SetOpacity(0);
-    logo.sprite.SetOpacity(fade);
-    if (global.t > 70 && Math.Random() < 0.012) {
-      global.glitch_frames = 3 + Math.Int(Math.Random() * 5);
-      gl.sprite.SetImage(glitch[Math.Int(Math.Random() * 2.99)]);
+    h = Math.Int(logo.h * k);
+    if (h < 2) h = 2;
+    place(logo.sprite, logo.base.Scale(logo.w, h), CX, CY, 5);
+  }
+  logo.sprite.SetOpacity(op);
+  if (hot_op > 0.01) {
+    if (k >= 0.999) place(hot.sprite, hot.img, CX, CY, 6);
+    else {
+      h = Math.Int(logo.h * k);
+      if (h < 2) h = 2;
+      place(hot.sprite, hot.base.Scale(logo.w, h), CX, CY, 6);
     }
   }
+  hot.sprite.SetOpacity(hot_op);
+  if ((ab > 0.5 || ab < -0.5) && k >= 0.999) {
+    cyan.sprite.SetPosition(Math.Int(CX - cyan.img.GetWidth() / 2 - ab), Math.Int(CY - cyan.img.GetHeight() / 2), 4);
+    cyan.sprite.SetOpacity(op * 0.85);
+  } else cyan.sprite.SetOpacity(0);
+}
 
-  // feixe de varredura
-  beam.sprite.SetY(Y0 + ((global.t * 5) % (H + 120)) - 60);
+fun hud(op, speed) {
+  ra.sprite.SetImage(ringa[Math.Int(global.t * speed / 3) % 12]);
+  rb.sprite.SetImage(ringb[5 - (Math.Int(global.t * speed / 4) % 6)]);
+  ra.sprite.SetOpacity(op * 0.9);
+  rb.sprite.SetOpacity(op * 0.7);
+  glow.sprite.SetOpacity(op * (0.50 + 0.22 * Math.Sin(global.t * 0.06)));
+}
 
-  if (global.pw_mode) return;
+fun texts(op) {
+  title.sprite.SetOpacity(op);
+  kanji.sprite.SetOpacity(op);
+  motto.sprite.SetOpacity(op * 0.9);
+  footer.sprite.SetOpacity(op);
+  corners(op);
+}
 
-  // barra de progresso
-  bar.bg.SetOpacity(fade3);
-  bar.fg.SetOpacity(fade3);
-  tip.sprite.SetOpacity(fade3);
-  if (shutting) {
-    p = ((global.t % 150) / 150);
+fun scanner(op) {
+  span = Math.Int(logo.h + 80 * SC);
+  y = CY - span / 2 + (Math.Int(global.t * 3.2 * SC) % span);
+  beam.sprite.SetPosition(Math.Int(CX - beam.img.GetWidth() / 2), Math.Int(y - beam.img.GetHeight() / 2), 7);
+  beam.sprite.SetOpacity(op * 0.55);
+}
+
+fun progress(op, p, indeterminate) {
+  bar.bg.SetOpacity(op);
+  bar.fg.SetOpacity(op);
+  tip.sprite.SetOpacity(op);
+  if (indeterminate) {
+    seg = Math.Int(bar.w * 0.25);
+    x = bar.x + (Math.Int(global.t * 4) % (bar.w + seg)) - seg;
+    x0 = x;
+    if (x0 < bar.x) x0 = bar.x;
+    x1 = x + seg;
+    if (x1 > bar.x + bar.w) x1 = bar.x + bar.w;
+    w = x1 - x0;
+    if (w < 1) w = 1;
+    bar.fg.SetImage(bar.fgimg.Scale(w, 2));
+    bar.fg.SetPosition(x0, bar.y, 6);
+    tip.sprite.SetPosition(x1 - tip.img.GetWidth() / 2, bar.y - tip.img.GetHeight() / 2 + 1, 7);
+    show_percent(0, 0);
   } else {
-    global.prog = global.prog + (global.prog_target - global.prog) * 0.06;
-    p = global.prog;
+    w = Math.Int(bar.w * p);
+    if (w < 1) w = 1;
+    bar.fg.SetImage(bar.fgimg.Scale(w, 2));
+    bar.fg.SetPosition(bar.x, bar.y, 6);
+    tip.sprite.SetPosition(bar.x + w - tip.img.GetWidth() / 2, bar.y - tip.img.GetHeight() / 2 + 1, 7);
+    show_percent(p, op);
   }
-  w = Math.Int(bar.w * p);
-  if (w < 1) w = 1;
-  bar.fg.SetImage(bar.fgimg.Scale(w, 2));
-  tip.sprite.SetPosition(bar.x + w - tip.image.GetWidth() / 2, bar.y - 6, 5);
+}
 
-  // mensagem de status
-  if (shutting) {
-    idx = Math.Int(global.t / 120) % status_count;
-  } else {
-    idx = Math.Int(p * (status_count - 0.01));
-  }
+fun status_text(op, idx) {
   if (idx != global.status_idx) {
     global.status_idx = idx;
     img = status_img[idx];
     status.sprite.SetImage(img);
-    status.sprite.SetPosition(CX - img.GetWidth() / 2, status.y, 3);
+    status.sprite.SetPosition(CX - img.GetWidth() / 2, status.y, 5);
   }
-  // cursor piscando no status
-  if ((global.t % 50) < 30) status.sprite.SetOpacity(fade3);
-  else status.sprite.SetOpacity(fade3 * 0.55);
+  blink = 1;
+  if ((global.t % 50) >= 32) blink = 0.55;
+  status.sprite.SetOpacity(op * blink);
+}
+
+// glitch rápido de vez em quando: aberração forte por 3-5 quadros
+fun micro_glitch() {
+  if (global.glitch_left > 0) {
+    global.glitch_left = global.glitch_left - 1;
+    return (Math.Random() - 0.5) * 26 * SC;
+  }
+  if (global.t > global.next_glitch) {
+    global.glitch_left = 3 + Math.Int(Math.Random() * 3);
+    global.next_glitch = global.t + 180 + Math.Int(Math.Random() * 220);
+  }
+  return 0;
+}
+
+// ---------------------------------------------------------------- ligando
+fun refresh_boot() {
+  t = global.t;
+  // 0-12: ponto de luz
+  if (t < 12) {
+    dot.sprite.SetOpacity(ease_out(t / 12));
+    return;
+  }
+  // 12-24: o ponto vira uma linha horizontal
+  if (t < 24) {
+    u = (t - 12) / 12;
+    dot.sprite.SetOpacity(1 - u);
+    show_line(16 + (line.full - 16) * ease_out(u), 1);
+    return;
+  }
+  dot.sprite.SetOpacity(0);
+  // 24-44: o logo abre na vertical a partir da linha, com clarão
+  k = 1;
+  hot_op = 0;
+  if (t < 44) {
+    u = (t - 24) / 20;
+    k = ease_back(u);
+    if (k < 0.02) k = 0.02;
+    hot_op = 1 - ease_out(u);
+    show_line(line.full, 1 - ease_out(u * 1.4));
+  } else line.sprite.SetOpacity(0);
+  // 30-84: a aberração cromática assenta
+  ab = 0;
+  if (t < 84) ab = 18 * SC * (1 - ease_out((t - 30) / 54)) * (0.6 + 0.4 * Math.Sin(t * 1.7));
+  ab = ab + micro_glitch();
+  draw_logo(k, ab, hot_op, 1);
+
+  bg.sprite.SetOpacity(ease_out((t - 26) / 50));
+  hud(ease_out((t - 40) / 40), 1);
+  texts(ease_out((t - 56) / 34));
+  scanner(ease_out((t - 70) / 30));
+  if (global.pw_mode) return;
+
+  global.prog = global.prog + (global.prog_target - global.prog) * 0.06;
+  op = ease_out((t - 74) / 30);
+  progress(op, global.prog, 0);
+  status_text(op, Math.Int(global.prog * (status_count - 0.01)));
+}
+
+// ---------------------------------------------------------------- desligando
+OFF_AT = 120;  // ~2,4 s mostrando a tela; depois a "TV de tubo" desliga
+fun refresh_shutdown() {
+  t = global.t;
+  if (t < OFF_AT) {
+    op = ease_out(t / 16);
+    bg.sprite.SetOpacity(op);
+    draw_logo(1, micro_glitch(), 0, op);
+    hud(op, 2);
+    texts(op);
+    scanner(op);
+    progress(op, 0, 1);
+    status_text(op, Math.Int(t / 45) % status_count);
+    return;
+  }
+  u = t - OFF_AT;
+  // 0-12: último glitch forte; o resto da tela apaga
+  if (u < 12) {
+    fade = 1 - ease_in(u / 12);
+    bg.sprite.SetOpacity(fade);
+    hud(fade, 4);
+    texts(fade);
+    scanner(0);
+    progress(fade, 0, 1);
+    status_text(fade, status_count - 1);
+    draw_logo(1, (Math.Random() - 0.5) * 40 * SC, 0.35 * ease_in(u / 12), 1);
+    return;
+  }
+  hud(0, 1);
+  texts(0);
+  progress(0, 0, 1);
+  status.sprite.SetOpacity(0);
+  bg.sprite.SetOpacity(0);
+  // 12-24: o logo é esmagado numa linha brilhante
+  if (u < 24) {
+    v = (u - 12) / 12;
+    k = 1 - ease_in(v);
+    if (k < 0.02) k = 0.02;
+    draw_logo(k, 0, 0.4 + 0.6 * v, 1 - v * 0.5);
+    show_line(line.full, ease_in(v));
+    return;
+  }
+  draw_logo(0.02, 0, 0, 0);
+  // 24-34: a linha encolhe até virar um ponto
+  if (u < 34) {
+    v = (u - 24) / 10;
+    show_line(line.full * (1 - ease_out(v)), 1);
+    dot.sprite.SetOpacity(ease_out(v));
+    return;
+  }
+  line.sprite.SetOpacity(0);
+  // 34-54: o ponto apaga
+  if (u < 54) {
+    dot.sprite.SetOpacity(1 - ease_out((u - 34) / 20));
+    return;
+  }
+  dot.sprite.SetOpacity(0);
+  // depois: só "ARASAKA // OFFLINE" piscando bem fraco
+  op = ease_out((u - 60) / 30) * 0.8;
+  if ((t % 80) >= 50) op = op * 0.4;
+  offline.sprite.SetOpacity(op);
+}
+
+fun refresh() {
+  global.t = global.t + 1;
+  if (shutting) refresh_shutdown();
+  else refresh_boot();
 }
 Plymouth.SetRefreshFunction(refresh);
 
 fun quit() {
-  logo.sprite.SetOpacity(1);
-  gl.sprite.SetOpacity(0);
+  draw_logo(1, 0, 0, 1);
+  line.sprite.SetOpacity(0);
+  dot.sprite.SetOpacity(0);
 }
 Plymouth.SetQuitFunction(quit);

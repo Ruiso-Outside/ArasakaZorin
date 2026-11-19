@@ -9,7 +9,7 @@ FontStruct Non-Commercial.
 | Etapa | O que você vê |
 |---|---|
 | **GRUB** | Menu de boot preto com logo Arasaka, painel HUD com cantos cortados, item selecionado em vermelho e contagem regressiva |
-| **Plymouth** | Logo com fade-in e pulso, glitch aleatório, barra de progresso com mensagens ("LOADING NEURAL KERNEL…"), feixe de varredura. Também cobre a tela de senha de disco criptografado e o desligamento |
+| **Plymouth** | Ligando: efeito de monitor CRT (ponto de luz → linha → o logo abre com clarão e aberração cromática), anéis de HUD girando, scanner, barra com porcentagem. Desligando: o logo é esmagado numa linha e num ponto, como uma TV de tubo, e fica "ARASAKA // OFFLINE". Também cobre a senha de disco criptografado |
 | **Login (GDM)** | Fundo "Secure Access Terminal", logo Arasaka, campo de senha estilo terminal, cursor e fonte do tema |
 | **Desktop** | Tema GTK3/GTK4/libadwaita preto e vermelho com cantos retos, painel e menus do GNOME Shell, Alt+Tab, notificações e OSD |
 | **Ícones** | Pastas vermelhas (Papirus), logo Arasaka no menu iniciar e ícone de terminal próprio |
@@ -17,6 +17,7 @@ FontStruct Non-Commercial.
 | **Sons** | Sons sintetizados: entrada/saída da sessão, notificações, erros, USB, captura de tela |
 | **Wallpapers** | 5 fundos em 2560×1440: Core, Crimson, Glitch, HUD e Secure Access |
 | **Terminal** | Perfil "Arasaka" no GNOME Terminal, prompt `┌─[user@host]─[~]` com branch do git e banner com o logo em ASCII e dados do sistema |
+| **Nome e logo** | "Arasaka OS" no GRUB e em Configurações > Sobre; logo Arasaka no botão do menu do Zorin |
 | **Efeitos (Arasaka FX)** | Glitch ao abrir e fechar janelas e na visão geral, feixe de varredura vermelho no fundo com falhas de vez em quando, linhas de varredura de monitor CRT (somem em jogos e vídeos em tela cheia) e visão geral com grade de neon |
 | **Fontes** | cedge1 (títulos), Rajdhani (interface) e Share Tech Mono (terminal), as duas últimas baixadas do Google Fonts |
 
@@ -46,6 +47,7 @@ tar xzf ArasakaZorin.tar.gz && cd ArasakaZorin
 | `--sem-terminal` | Não mexe no bash nem no perfil do terminal |
 | `--sem-sons` | Não troca os sons |
 | `--sem-efeitos` | Não instala a extensão Arasaka FX |
+| `--manter-nome` | Mantém o nome "Zorin OS" no GRUB e em Configurações > Sobre |
 | `--sem-download` | Não baixa fontes (funciona offline, mas usa as fontes padrão) |
 | `--grub-oculto` | Mantém o menu do GRUB escondido (o Zorin esconde por padrão; o tema mostra o menu por 5 s) |
 | `-y` | Não pede confirmação |
@@ -74,6 +76,17 @@ arasaka-fx
 - Para trocar o wallpaper, vá em Configurações > Fundo, onde aparecem os 5 fundos Arasaka.
 - Se você mudar o tema pelo app **Aparência do Zorin**, ele sobrescreve o Arasaka. Para voltar, rode `./install.sh` de novo.
 - Os apps Flatpak com libadwaita também ficam tematizados. Apps GTK3 em Flatpak mantêm o tema padrão.
+
+## Pré-visualizar sem reiniciar
+
+```bash
+build/preview_plymouth.sh /tmp/ply boot 6
+```
+
+roda a tela de carregamento numa janela (sem senha: o Plymouth fica isolado com `bwrap`, e o renderizador X11 é
+baixado com `apt download`) e salva prints em `/tmp/ply`; `python3 build/xwd2png.py /tmp/ply` converte para PNG.
+Troque `boot` por `shutdown` para ver o desligamento. `build/test_fx_headless.sh /tmp/fx` testa a extensão Arasaka FX
+num GNOME Shell sem tela.
 
 ## Regenerar as imagens (opcional)
 

@@ -12,6 +12,7 @@
 #     --sem-sons        nao troca o tema de sons
 #     --sem-download    nao baixa as fontes Rajdhani / Share Tech Mono
 #     --sem-efeitos     nao instala a extensao Arasaka FX (glitch nas janelas, feixe no fundo, CRT)
+#     --manter-nome     mantem o nome "Zorin OS" no GRUB e em Configuracoes > Sobre
 #     --grub-oculto     mantem o menu do GRUB escondido
 #     -y                nao pede confirmacao
 # ============================================================
@@ -21,7 +22,7 @@ set -uo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 T="$DIR/theme"
 
-DO_GRUB=1 DO_PLY=1 DO_GDM=1 DO_TERM=1 DO_SND=1 DO_DL=1 DO_FX=1 GRUB_SHOW=1 ASSUME_YES=0
+DO_GRUB=1 DO_PLY=1 DO_GDM=1 DO_TERM=1 DO_SND=1 DO_DL=1 DO_FX=1 DO_NAME=1 GRUB_SHOW=1 ASSUME_YES=0
 for a in "$@"; do
   case "$a" in
     --sem-grub) DO_GRUB=0 ;;
@@ -31,6 +32,7 @@ for a in "$@"; do
     --sem-sons) DO_SND=0 ;;
     --sem-download) DO_DL=0 ;;
     --sem-efeitos) DO_FX=0 ;;
+    --manter-nome) DO_NAME=0 ;;
     --grub-oculto) GRUB_SHOW=0 ;;
     -y|--yes) ASSUME_YES=1 ;;
     -h|--help) sed -n '2,20p' "$0"; exit 0 ;;
@@ -551,6 +553,22 @@ gdm() {
   fi
 }
 
+# Nome do sistema: "Arasaka OS" em Configurações > Sobre e no menu do GRUB. Só NAME, PRETTY_NAME e LOGO mudam;
+# ID=zorin, versões e /etc/lsb-release ficam iguais (atualizações e drivers dependem deles).
+branding() {
+  [ "$DO_NAME" -eq 1 ] || return 0
+  step "Nome do sistema (Arasaka OS)"
+  local src=/usr/lib/os-release tmp ver
+  [ -f "$src" ] || src=/etc/os-release
+  ver=$(. "$src" && echo "${VERSION:-$VERSION_ID}")
+  tmp=$(mktemp)
+  sed -E -e 's/^NAME=.*/NAME="Arasaka OS"/' -e "s/^PRETTY_NAME=.*/PRETTY_NAME=\"Arasaka OS ${ver}\"/" -e 's/^LOGO=.*/LOGO=arasaka/' "$src" > "$tmp"
+  grep -q '^LOGO=' "$tmp" || echo 'LOGO=arasaka' >> "$tmp"
+  echo '# ARASAKA: gerado pelo tema (o original e /usr/lib/os-release; ./uninstall.sh restaura)' >> "$tmp"
+  sudo rm -f /etc/os-release && sudo install -m644 "$tmp" /etc/os-release && ok "Configuracoes > Sobre: Arasaka OS ${ver}"
+  rm -f "$tmp"
+}
+
 grub() {
   [ "$DO_GRUB" -eq 1 ] || return 0
   step "GRUB (menu de boot)"
@@ -582,6 +600,7 @@ grub() {
   local cfg=/etc/default/grub
   backup_sys "$cfg" grub.default
   set_kv "$cfg" GRUB_THEME "\"$dst/theme.txt\""
+  [ "$DO_NAME" -eq 1 ] && set_kv "$cfg" GRUB_DISTRIBUTOR '"Arasaka OS"'
   if [ "$GRUB_SHOW" -eq 1 ]; then
     set_kv "$cfg" GRUB_TIMEOUT_STYLE menu
     local to; to=$(sudo sed -n -E 's/^GRUB_TIMEOUT=//p' "$cfg" | tr -d '"')
@@ -660,6 +679,7 @@ sounds
 apply_settings
 terminal
 gdm
+branding
 grub
 plymouth_theme
 fx

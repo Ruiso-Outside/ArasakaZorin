@@ -87,6 +87,10 @@ if [ -f /etc/dconf/db/gdm.d/95-arasaka ]; then
 fi
 
 # ---------------------------------------------------------------- GRUB
+# nome do sistema: volta o link original do /etc/os-release
+if grep -q "ARASAKA" /etc/os-release 2>/dev/null; then
+  sudo rm -f /etc/os-release && sudo ln -s ../usr/lib/os-release /etc/os-release && ok "nome do sistema restaurado"
+fi
 if [ -f "$SYS_BK/grub.default" ]; then
   sudo install -m644 "$SYS_BK/grub.default" /etc/default/grub
   sudo rm -rf /boot/grub/themes/arasaka /boot/grub2/themes/arasaka

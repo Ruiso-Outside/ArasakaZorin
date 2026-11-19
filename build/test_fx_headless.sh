@@ -17,7 +17,7 @@ export XDG_CONFIG_HOME="$T/config" XDG_DATA_HOME="$T/data" XDG_CACHE_HOME="$T/ca
 unset WAYLAND_DISPLAY DISPLAY DBUS_SESSION_BUS_ADDRESS
 dbus-run-session -- bash -c '
   gsettings set org.gnome.shell disable-user-extensions false
-  gsettings set org.gnome.shell enabled-extensions "[\"user-theme@gnome-shell-extensions.gcampax.github.com\", \"arasaka-fx@arasaka.local\"]"
+  gsettings set org.gnome.shell enabled-extensions "[\"user-theme@gnome-shell-extensions.gcampax.github.com\", \"zorin-taskbar@zorinos.com\", \"zorin-menu@zorinos.com\", \"arasaka-fx@arasaka.local\"]"
   gsettings set org.gnome.shell.extensions.user-theme name "Arasaka"
   gsettings set org.gnome.desktop.interface color-scheme prefer-dark
   gsettings set org.gnome.desktop.background picture-uri "file:///usr/share/backgrounds/arasaka/arasaka-core.png"

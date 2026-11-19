@@ -476,46 +476,141 @@ PLY_STATUS_BOOT = [
 PLY_STATUS_DOWN = ["TERMINATING SESSION", "PURGING VOLATILE MEMORY", "SECURING CORE"]
 
 
+def hud_ring(D, symmetric, style, color=RED, ss=3):
+    """Anel de HUD (D px) com simetria de 'symmetric' partes: girando 360/symmetric graus ele volta igual."""
+    S = D * ss
+    im = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    c = S / 2
+    step = 360 / symmetric
+    if style == "outer":
+        r = S / 2 - 6 * ss
+        for k in range(symmetric):
+            a0 = k * step
+            d.arc([c - r, c - r, c + r, c + r], a0 + 4, a0 + step * 0.55, fill=color + (235,), width=3 * ss)
+            d.arc([c - r, c - r, c + r, c + r], a0 + step * 0.62, a0 + step * 0.70, fill=color + (150,), width=3 * ss)
+            r2 = r - 14 * ss
+            d.arc([c - r2, c - r2, c + r2, c + r2], a0 + step * 0.15, a0 + step * 0.40, fill=color + (110,), width=1 * ss)
+            # marcador triangular na ponta de cada arco
+            ang = math.radians(a0 + step * 0.55)
+            px, py = c + (r + 9 * ss) * math.cos(ang), c + (r + 9 * ss) * math.sin(ang)
+            d.ellipse([px - 3 * ss, py - 3 * ss, px + 3 * ss, py + 3 * ss], fill=color + (255,))
+    else:
+        r = S / 2 - 4 * ss
+        for k in range(symmetric * 4):
+            ang = math.radians(k * step / 4)
+            long = k % 4 == 0
+            r0 = r - (16 if long else 8) * ss
+            d.line([(c + r0 * math.cos(ang), c + r0 * math.sin(ang)), (c + r * math.cos(ang), c + r * math.sin(ang))],
+                   fill=color + (220 if long else 120,), width=(3 if long else 2) * ss)
+        r3 = r - 26 * ss
+        for k in range(symmetric):
+            a0 = k * step
+            d.arc([c - r3, c - r3, c + r3, c + r3], a0, a0 + step * 0.3, fill=color + (90,), width=2 * ss)
+    im = im.resize((D, D), Image.LANCZOS)
+    glow = im.filter(ImageFilter.GaussianBlur(D / 90))
+    out = Image.new("RGBA", (D, D), (0, 0, 0, 0))
+    out.alpha_composite(glow)
+    out.alpha_composite(im)
+    return out
+
+
 def plymouth_assets():
     base = "plymouth/arasaka/"
-    S, C = 240, 340  # tamanho do logo, canvas
+    pdir = T / base
+    for f in pdir.glob("*.png"):  # recomeça do zero (sobras de versões antigas não vão para o initramfs)
+        f.unlink()
+    # tudo desenhado para 1080p; o script escala para a tela
+    S, C = 400, 440  # logo e o quadro dele
     lg = Image.new("RGBA", (C, C), (0, 0, 0, 0))
     paste(lg, logo(S), (C // 2, C // 2))
     save(lg, base + "logo.png")
-    gl = Image.new("RGBA", (C + 160, C + 160), (0, 0, 0, 0))
-    paste(gl, logo_glow(S, 120, blur=26, strength=0.8), ((C + 160) // 2, (C + 160) // 2))
+    cy = Image.new("RGBA", (C, C), (0, 0, 0, 0))
+    paste(cy, logo(S, color=CYAN, opacity=0.8), (C // 2, C // 2))
+    save(cy, base + "logo_c.png")
+    hot = Image.new("RGBA", (C, C), (0, 0, 0, 0))
+    paste(hot, logo(S, color=(255, 214, 214)), (C // 2, C // 2))
+    save(hot, base + "logo_hot.png")
+    G = 820
+    gl = Image.new("RGBA", (G, G), (0, 0, 0, 0))
+    paste(gl, logo_glow(S, (G - S) // 2, blur=46, strength=0.9), (G // 2, G // 2))
     save(gl, base + "glow.png")
-    for i, seed in enumerate([3, 9, 21]):
-        save(glitchify(lg, random.Random(seed), maxoff=34, split=7), base + f"glitch{i}.png")
-    save(text_image("ARASAKA", font("cedge", 50), WHITE, spacing=16), base + "title.png")
-    save(text_image("荒坂", font("jp", 24), RED, spacing=8), base + "kanji.png")
-    f = ui(17)
-    for i, s in enumerate(PLY_STATUS_BOOT):
-        save(text_image(s, f, GRAY, spacing=5), base + f"status{i}.png")
-    for i, s in enumerate(PLY_STATUS_DOWN):
-        save(text_image(s, f, GRAY, spacing=5), base + f"down{i}.png")
+    # anéis de HUD: 12 quadros de 5° (anel de 6 partes) e 6 quadros de 5° (anel de 12 partes)
+    ra, rb = hud_ring(620, 6, "outer"), hud_ring(520, 12, "inner")
+    for i in range(12):
+        save(ra.rotate(-5 * i, resample=Image.BICUBIC).quantize(48, method=Image.FASTOCTREE), base + f"ringa{i:02d}.png")
+    for i in range(6):
+        save(rb.rotate(5 * i, resample=Image.BICUBIC).quantize(48, method=Image.FASTOCTREE), base + f"ringb{i}.png")
+    # CRT: ponto e linha de luz
+    dot = Image.radial_gradient("L").resize((140, 140), Image.BICUBIC).point(lambda v: max(0, 255 - int(v * 1.15)) ** 2 // 255)
+    dimg = Image.new("RGBA", (140, 140), (255, 230, 230, 0))
+    dimg.putalpha(dot)
+    halo = colorize(Image.radial_gradient("L").resize((140, 140), Image.BICUBIC).point(lambda v: max(0, 255 - v)), RED)
+    halo.alpha_composite(dimg)
+    save(halo, base + "dot.png")
+    L = Image.new("RGBA", (1200, 60), (0, 0, 0, 0))
+    ld = ImageDraw.Draw(L)
+    for y in range(60):
+        k = math.exp(-((y - 29.5) / 9.0) ** 2)
+        ld.line([(0, y), (1199, y)], fill=RED + (int(200 * k),))
+    ld.rectangle([0, 28, 1199, 31], fill=(255, 225, 225, 255))
+    fade = Image.linear_gradient("L").rotate(90, expand=True).resize((1200, 60))
+    edge = fade.point(lambda v: min(255, int(min(v, 255 - v) * 4)))
+    L.putalpha(ImageChops.multiply(L.getchannel("A"), edge))
+    save(L, base + "line.png")
+    # fundo 1080p (grade de neon, ruído, linhas de varredura, vinheta)
+    # fundo 1080p: brilho radial, linhas de varredura leves e, por cima, a grade uniforme (a varredura não apaga a grade)
+    bg = base_bg(1920, 1080, tint=(70, 4, 8), grid=False, noise=False, scan=False)
+    sl = Image.new("RGBA", bg.size, (0, 0, 0, 0))
+    sd = ImageDraw.Draw(sl)
+    for y in range(0, 1080, 4):
+        sd.line([(0, y), (1919, y)], fill=(0, 0, 0, 38))
+    bg.alpha_composite(sl)
+    gr = Image.new("RGBA", bg.size, (0, 0, 0, 0))
+    gd = ImageDraw.Draw(gr)
+    for x in range(0, 1920, 60):
+        gd.line([(x, 0), (x, 1079)], fill=(255, 40, 50, 11 if x % 240 else 22))
+    for y in range(30, 1080, 60):
+        gd.line([(0, y), (1919, y)], fill=(255, 40, 50, 11 if (y - 30) % 240 else 22))
+    vg = Image.radial_gradient("L").resize(bg.size, Image.BICUBIC).point(lambda v: max(0, 255 - int(v * 1.3)))
+    gr.putalpha(ImageChops.multiply(gr.getchannel("A"), vg))
+    bg.alpha_composite(gr)
+    save(bg.convert("RGB"), base + "bg.png")
+    # textos
+    save(text_image("ARASAKA", font("cedge", 68), WHITE, spacing=24), base + "title.png")
+    save(text_image("荒坂", font("jp", 28), RED, spacing=10), base + "kanji.png")
+    save(text_image("SECURITY  ·  TECHNOLOGY  ·  ORDER", ui(15), GRAY_D, spacing=6), base + "motto.png")
+    f = ui(16)
+    for i, st in enumerate(PLY_STATUS_BOOT):
+        save(text_image(st, f, GRAY, spacing=5), base + f"status{i}.png")
+    for i, st in enumerate(PLY_STATUS_DOWN):
+        save(text_image(st, f, GRAY, spacing=5), base + f"down{i}.png")
+    save(text_image("ARASAKA  //  OFFLINE", font("mono", 17), RED, spacing=4), base + "offline.png")
+    fm = font("monob", 22)
+    for n in range(10):
+        save(text_image(str(n), fm, RED_HI), base + f"d{n}.png")
+    save(text_image("%", fm, RED), base + "pct.png")
     save(text_image("ENTER DECRYPTION KEY", ui(17), RED, spacing=5), base + "pw_label.png")
     save(text_image("ARASAKA CORPORATION  //  SECURE BOOT", font("mono", 14), GRAY_D, spacing=1), base + "footer.png")
-    save(Image.new("RGBA", (1, 1), (36, 36, 42, 255)), base + "bar_bg.png")
+    save(Image.new("RGBA", (1, 1), (60, 14, 18, 255)), base + "bar_bg.png")
     save(Image.new("RGBA", (1, 1), RED + (255,)), base + "bar_fg.png")
-    tip = Image.new("L", (40, 14), 0)
-    ImageDraw.Draw(tip).ellipse([4, 3, 36, 11], fill=255)
-    save(colorize(tip.filter(ImageFilter.GaussianBlur(3)), RED_HI), base + "bar_tip.png")
-    # caixa de senha
+    tip = Image.new("L", (60, 20), 0)
+    ImageDraw.Draw(tip).ellipse([6, 6, 54, 14], fill=255)
+    tipc = colorize(tip.filter(ImageFilter.GaussianBlur(4)), RED_HI)
+    ImageDraw.Draw(tipc).rectangle([28, 9, 31, 10], fill=(255, 235, 235, 255))
+    save(tipc, base + "bar_tip.png")
     box = Image.new("RGBA", (440, 50), (0, 0, 0, 230))
     cut_frame(box, (1, 1, 438, 48), 10, RED + (255,), 2)
     save(box, base + "pw_box.png")
     b = Image.new("RGBA", (12, 12), (0, 0, 0, 0))
     ImageDraw.Draw(b).rectangle([1, 1, 10, 10], fill=RED + (255,))
     save(b, base + "bullet.png")
-    # feixe de varredura
-    beam = Image.new("RGBA", (4, 60), (0, 0, 0, 0))
+    # feixe do scanner (linha fina passando pelo logo)
+    beam = Image.new("RGBA", (4, 24), (0, 0, 0, 0))
     bd = ImageDraw.Draw(beam)
-    for y in range(60):
-        a = int(26 * math.sin(math.pi * y / 59))
-        bd.line([(0, y), (3, y)], fill=RED + (a,))
+    for y in range(24):
+        bd.line([(0, y), (3, y)], fill=RED_HI + (int(170 * math.exp(-((y - 11.5) / 4.0) ** 2)),))
     save(beam, base + "beam.png")
-    # cantos
     for name, (sx, sy) in {"tl": (1, 1), "tr": (-1, 1), "bl": (1, -1), "br": (-1, -1)}.items():
         c = Image.new("RGBA", (44, 44), (0, 0, 0, 0))
         d = ImageDraw.Draw(c)
@@ -524,6 +619,20 @@ def plymouth_assets():
         d.line([(x, y), (x + sx * 40, y)], fill=RED + (230,), width=2)
         d.line([(x, y), (x, y + sy * 40)], fill=RED + (230,), width=2)
         save(c, base + f"corner_{name}.png")
+
+
+def extension_assets():
+    """Ícone simbólico (uma cor, recolorido pelo GNOME) que a Arasaka FX põe no botão do menu do Zorin."""
+    # o GNOME recolore ícones simbólicos forçando preenchimento em tudo: o anel vira uma coroa preenchida
+    # (círculo de fora menos o de dentro, evenodd) em vez de um contorno, senão ele vira um disco cheio
+    v, col = 16, "#333333"
+    k = v / (RING_R * 2)
+    c, ro, ri = v / 2, RING_R * k, RING_IN * k
+    ring = (f'<path fill="{col}" fill-rule="evenodd" d="M{c - ro:.2f},{c:.2f} a{ro:.2f},{ro:.2f} 0 1,0 {2 * ro:.2f},0 '
+            f'a{ro:.2f},{ro:.2f} 0 1,0 {-2 * ro:.2f},0 Z M{c - ri:.2f},{c:.2f} a{ri:.2f},{ri:.2f} 0 1,0 {2 * ri:.2f},0 '
+            f'a{ri:.2f},{ri:.2f} 0 1,0 {-2 * ri:.2f},0 Z"/>')
+    out = T / "extension/arasaka-fx@arasaka.local/arasaka-symbolic.svg"
+    out.write_text(logo_svg(color=col, ring=False, view=v, extra=ring), encoding="utf-8")
 
 
 # ---------------------------------------------------------------- cursores
@@ -977,17 +1086,23 @@ def terminal_logo():
 
 # ---------------------------------------------------------------- main
 def main():
+    """Sem argumentos gera tudo; com nomes (ex.: plymouth grub) gera só essas partes."""
+    import sys
+    only = set(sys.argv[1:])
     (ROOT / "build/preview").mkdir(parents=True, exist_ok=True)
     steps = [
         ("logo e icones", icon_assets),
         ("wallpapers", None),
         ("grub", grub_assets),
         ("plymouth", plymouth_assets),
+        ("extensao", extension_assets),
         ("cursores", cursor_assets),
         ("sons", sound_assets),
         ("logo do terminal", terminal_logo),
     ]
     for name, fn in steps:
+        if only and name not in only and name.split()[0] not in only:
+            continue
         print(f"[ARASAKA] gerando {name}...", flush=True)
         if fn:
             fn()
