@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# ARASAKA FX // liga e desliga os efeitos visuais do tema (a extensão aplica na hora, sem sair da sessão)
+#   arasaka-fx                   mostra o que está ligado
+#   arasaka-fx on | off          liga ou desliga todos
+#   arasaka-fx <efeito> on|off   janelas | visao | fundo | crt
+set -euo pipefail
+CFG="${XDG_CONFIG_HOME:-$HOME/.config}/arasaka/fx.json"
+mkdir -p "$(dirname "$CFG")"
+python3 -I - "$CFG" "$@" <<'EOF'
+import json, sys
+cfg, args = sys.argv[1], sys.argv[2:]
+NAMES = {"janelas": "windows", "visao": "overview", "fundo": "background", "crt": "crt"}
+DESC = {"windows": "glitch ao abrir e fechar janelas", "overview": "glitch na visão geral (Super)",
+        "background": "feixe de varredura no fundo", "crt": "linhas de varredura (some em tela cheia)"}
+try:
+    data = json.load(open(cfg))
+except (OSError, ValueError):
+    data = {}
+data = {k: bool(data.get(k, True)) for k in NAMES.values()}
+on = lambda v: {"on": True, "ligar": True, "off": False, "desligar": False}.get(v)
+if len(args) == 1 and on(args[0]) is not None:
+    data = {k: on(args[0]) for k in data}
+elif len(args) == 2 and args[0] in NAMES and on(args[1]) is not None:
+    data[NAMES[args[0]]] = on(args[1])
+elif args:
+    sys.exit("uso: arasaka-fx [on|off] | arasaka-fx <janelas|visao|fundo|crt> <on|off>")
+if args:
+    json.dump(data, open(cfg, "w"), indent=2)
+R, G, N = "\033[38;2;227;18;31m", "\033[38;2;120;120;130m", "\033[0m"
+for pt, k in NAMES.items():
+    print(f"  {R}■{N} {pt:<8} {'ON ' if data[k] else 'OFF'}  {G}{DESC[k]}{N}")
+EOF

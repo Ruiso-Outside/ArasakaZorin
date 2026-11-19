@@ -1,0 +1,7 @@
+{
+  "uuid": "arasaka-fx@arasaka.local",
+  "name": "Arasaka FX",
+  "description": "Efeitos visuais do tema Arasaka: glitch ao abrir e fechar janelas e na visão geral, feixe de varredura no fundo e filtro CRT (some em tela cheia). Ligue e desligue cada um com o comando arasaka-fx.",
+  "shell-version": ["45", "46", "47", "48"],
+  "version": 1
+}

@@ -51,6 +51,16 @@ fi
 rm -f "$HOME/.local/share/org.gnome.Ptyxis/palettes/Arasaka.palette"
 rm -f "$HOME/.config/autostart/arasaka-login-sound.desktop"
 
+# ---------------------------------------------------------------- Arasaka FX
+fxid=arasaka-fx@arasaka.local
+gnome-extensions disable "$fxid" >/dev/null 2>&1 || true
+cur=$(gsettings get org.gnome.shell enabled-extensions 2>/dev/null)
+if [[ "$cur" == *"$fxid"* ]]; then
+  gsettings set org.gnome.shell enabled-extensions "$(printf '%s' "$cur" | sed "s/, *'$fxid'//; s/'$fxid', *//; s/'$fxid'//")"
+fi
+rm -rf "$HOME/.local/share/gnome-shell/extensions/$fxid" "$HOME/.local/bin/arasaka-fx" "$HOME/.config/arasaka/fx.json"
+ok "efeitos Arasaka FX removidos"
+
 # ---------------------------------------------------------------- libadwaita
 u4="$HOME/.config/gtk-4.0/gtk.css"
 rm -f "$u4"

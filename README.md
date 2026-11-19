@@ -17,6 +17,7 @@ FontStruct Non-Commercial.
 | **Sons** | Sons sintetizados: entrada/saída da sessão, notificações, erros, USB, captura de tela |
 | **Wallpapers** | 5 fundos em 2560×1440: Core, Crimson, Glitch, HUD e Secure Access |
 | **Terminal** | Perfil "Arasaka" no GNOME Terminal, prompt `┌─[user@host]─[~]` com branch do git e banner com o logo em ASCII e dados do sistema |
+| **Efeitos (Arasaka FX)** | Glitch ao abrir e fechar janelas e na visão geral, feixe de varredura vermelho no fundo com falhas de vez em quando, linhas de varredura de monitor CRT (somem em jogos e vídeos em tela cheia) e visão geral com grade de neon |
 | **Fontes** | cedge1 (títulos), Rajdhani (interface) e Share Tech Mono (terminal), as duas últimas baixadas do Google Fonts |
 
 ## Instalar
@@ -44,6 +45,7 @@ tar xzf ArasakaZorin.tar.gz && cd ArasakaZorin
 | `--sem-login` | Não mexe na tela de login |
 | `--sem-terminal` | Não mexe no bash nem no perfil do terminal |
 | `--sem-sons` | Não troca os sons |
+| `--sem-efeitos` | Não instala a extensão Arasaka FX |
 | `--sem-download` | Não baixa fontes (funciona offline, mas usa as fontes padrão) |
 | `--grub-oculto` | Mantém o menu do GRUB escondido (o Zorin esconde por padrão; o tema mostra o menu por 5 s) |
 | `-y` | Não pede confirmação |
@@ -61,6 +63,14 @@ Restaura as configurações antigas, o GRUB, o Plymouth e a tela de login a part
 
 - Para mostrar o banner de novo no terminal, rode `arasaka`.
 - Para desligar o banner, coloque `export ARASAKA_BANNER=0` no `~/.bashrc`, antes do bloco do Arasaka.
+- Para ligar ou desligar os efeitos, sem sair da sessão:
+
+```bash
+arasaka-fx
+```
+
+  mostra o que está ligado; `arasaka-fx off` desliga tudo, `arasaka-fx on` liga tudo e `arasaka-fx crt off`
+  (ou `janelas`, `visao`, `fundo`) mexe num efeito só. Os efeitos aparecem depois do primeiro login após a instalação.
 - Para trocar o wallpaper, vá em Configurações > Fundo, onde aparecem os 5 fundos Arasaka.
 - Se você mudar o tema pelo app **Aparência do Zorin**, ele sobrescreve o Arasaka. Para voltar, rode `./install.sh` de novo.
 - Os apps Flatpak com libadwaita também ficam tematizados. Apps GTK3 em Flatpak mantêm o tema padrão.
@@ -86,7 +96,9 @@ theme/
   grub/arasaka/               tema do GRUB (theme.txt gerado na instalação)
   plymouth/arasaka/           tema script do Plymouth
   gtk/Arasaka/                overrides GTK3, GTK4 e libadwaita
-  shell/arasaka-shell.css     GNOME Shell + tela de login
+  shell/arasaka-shell.css     GNOME Shell + tela de login (shell/assets: grade de neon da visão geral)
+  extension/arasaka-fx@...    extensão Arasaka FX (efeitos visuais)
+  bin/arasaka-fx              liga e desliga os efeitos
   icons/ cursors/ sounds/     ícones, cursores Xcursor, sons
   terminal/                   prompt, banner, logo ASCII, paleta do Ptyxis
   fonts/cedge1.ttf

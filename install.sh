@@ -11,6 +11,7 @@
 #     --sem-terminal    nao mexe no bash / perfil do terminal
 #     --sem-sons        nao troca o tema de sons
 #     --sem-download    nao baixa as fontes Rajdhani / Share Tech Mono
+#     --sem-efeitos     nao instala a extensao Arasaka FX (glitch nas janelas, feixe no fundo, CRT)
 #     --grub-oculto     mantem o menu do GRUB escondido
 #     -y                nao pede confirmacao
 # ============================================================
@@ -20,7 +21,7 @@ set -uo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 T="$DIR/theme"
 
-DO_GRUB=1 DO_PLY=1 DO_GDM=1 DO_TERM=1 DO_SND=1 DO_DL=1 GRUB_SHOW=1 ASSUME_YES=0
+DO_GRUB=1 DO_PLY=1 DO_GDM=1 DO_TERM=1 DO_SND=1 DO_DL=1 DO_FX=1 GRUB_SHOW=1 ASSUME_YES=0
 for a in "$@"; do
   case "$a" in
     --sem-grub) DO_GRUB=0 ;;
@@ -29,6 +30,7 @@ for a in "$@"; do
     --sem-terminal) DO_TERM=0 ;;
     --sem-sons) DO_SND=0 ;;
     --sem-download) DO_DL=0 ;;
+    --sem-efeitos) DO_FX=0 ;;
     --grub-oculto) GRUB_SHOW=0 ;;
     -y|--yes) ASSUME_YES=1 ;;
     -h|--help) sed -n '2,20p' "$0"; exit 0 ;;
@@ -242,6 +244,8 @@ gtk_theme() {
     info "Shell baseado no tema padrao do GNOME"
   fi
   cat "$T/shell/arasaka-shell.css" >> "$tmp/Arasaka/gnome-shell/gnome-shell.css"
+  # imagens usadas pelo CSS do shell (grade de neon da visão geral)
+  [ -d "$T/shell/assets" ] && cp "$T/shell/assets/"* "$tmp/Arasaka/gnome-shell/"
 
   sudo rm -rf "$dst"
   sudo cp -r "$tmp/Arasaka" "$dst"
@@ -617,6 +621,25 @@ plymouth_theme() {
   sudo update-initramfs -u >/dev/null 2>&1 && ok "tela de carregamento Arasaka ativa" || warn "update-initramfs falhou"
 }
 
+# Extensão Arasaka FX (efeitos visuais) e o comando arasaka-fx; tudo na pasta do usuário, sem senha
+fx() {
+  [ "$DO_FX" -eq 1 ] || return 0
+  step "Efeitos visuais (extensao Arasaka FX)"
+  local uuid=arasaka-fx@arasaka.local cur dst="$HOME/.local/share/gnome-shell/extensions/arasaka-fx@arasaka.local"
+  rm -rf "$dst"; mkdir -p "$(dirname "$dst")"
+  cp -r "$T/extension/$uuid" "$dst"
+  mkdir -p "$HOME/.local/bin" "$HOME/.config/arasaka"
+  install -m755 "$T/bin/arasaka-fx" "$HOME/.local/bin/arasaka-fx"
+  [ -f "$HOME/.config/arasaka/fx.json" ] || printf '{"windows": true, "overview": true, "background": true, "crt": true}\n' > "$HOME/.config/arasaka/fx.json"
+  cur=$(gsettings get org.gnome.shell enabled-extensions 2>/dev/null)
+  if [[ "$cur" != *"$uuid"* ]]; then
+    if [[ "$cur" == "@as []" || "$cur" == "[]" || -z "$cur" ]]; then gsettings set org.gnome.shell enabled-extensions "['$uuid']"
+    else gsettings set org.gnome.shell enabled-extensions "${cur%]}, '$uuid']"; fi
+  fi
+  gnome-extensions enable "$uuid" >/dev/null 2>&1 || true
+  ok "Arasaka FX instalada (aparece no proximo login); comando: arasaka-fx"
+}
+
 finish() {
   printf '\n%s%s ■ INSTALACAO CONCLUIDA%s\n' "$R" "$B" "$N"
   printf '   %sEncerre a sessao e entre de novo (ou reinicie) para ver tudo:%s\n' "$W" "$N"
@@ -639,4 +662,5 @@ terminal
 gdm
 grub
 plymouth_theme
+fx
 finish
