@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-#   ARASAKA // Tema completo para Zorin OS (17 / 18)
+#   ARASAKA // Tema completo para Zorin OS (17 / 18) e Ubuntu 24.04 (GNOME)
 #   Boot (GRUB + Plymouth) -> Login (GDM) -> Desktop (GTK,
 #   Shell, icones, cursores, sons, wallpapers) -> Terminal.
 #
@@ -62,7 +62,7 @@ HAVE_RAJ=0 HAVE_STM=0
 banner() {
   printf '%s' "$R"
   if [ -r "$T/terminal/logo.txt" ]; then sed 's/^/   /' "$T/terminal/logo.txt"; fi
-  printf '%s\n   %sA R A S A K A%s  %s// INSTALADOR DE TEMA PARA ZORIN OS%s\n' "$N" "$W$B" "$N" "$G" "$N"
+  printf '%s\n   %sA R A S A K A%s  %s// INSTALADOR DE TEMA PARA ZORIN OS E UBUNTU%s\n' "$N" "$W$B" "$N" "$G" "$N"
   printf '   %sSECURITY · TECHNOLOGY · ORDER%s\n' "$G" "$N"
 }
 
@@ -111,7 +111,11 @@ preflight() {
   local os
   os=$(. /etc/os-release 2>/dev/null && echo "${PRETTY_NAME:-?}")
   info "Sistema: $os"
-  case "$os" in *Zorin*) ;; *) warn "Nao parece ser Zorin OS. Deve funcionar em Ubuntu/GNOME, mas nao foi feito para isso." ;; esac
+  case "$os" in
+    *Zorin*|*Arasaka*) ;;
+    *Ubuntu*) info "Ubuntu: suporte experimental (painel = Ubuntu Dock, tema base = Yaru)" ;;
+    *) warn "Nao parece ser Zorin OS nem Ubuntu. Pode funcionar em outros sistemas com GNOME, mas nao foi testado." ;;
+  esac
   if [ "$ASSUME_YES" -eq 0 ]; then
     printf '\n   O instalador vai pedir sua senha (sudo) para os arquivos do sistema.\n'
     printf '   Backups ficam em %s e %s.\n' "$SYS_BK" "$USR_BK"
@@ -180,11 +184,11 @@ wallpapers() {
   ok "5 wallpapers em /usr/share/backgrounds/arasaka (aparecem em Configuracoes > Fundo)"
 }
 
-# Escolhe o tema base do Zorin para herdar (vermelho escuro de preferencia).
+# Escolhe o tema base para herdar (vermelho escuro de preferencia): o do Zorin, ou o Yaru no Ubuntu.
 base_theme() {  # subdir (gtk-3.0 | gtk-4.0 | gnome-shell)
   local sub=$1 t cur
   cur=$(gsettings get org.gnome.desktop.interface gtk-theme 2>/dev/null | tr -d "'")
-  for t in ZorinRed-Dark "$cur" ZorinGrey-Dark ZorinBlue-Dark; do
+  for t in ZorinRed-Dark Yaru-red-dark "$cur" ZorinGrey-Dark ZorinBlue-Dark Yaru-dark Adwaita-dark; do
     [ -n "$t" ] && [ "$t" != "Arasaka" ] && [ -d "/usr/share/themes/$t/$sub" ] && { echo "$t"; return; }
   done
 }
@@ -383,6 +387,12 @@ apply_settings() {
   gs_set org.gnome.shell.extensions.zorin-taskbar trans-bg-color "'#050506'"
   gs_set org.gnome.shell.extensions.zorin-taskbar trans-use-custom-opacity "true"
   gs_set org.gnome.shell.extensions.zorin-taskbar trans-panel-opacity "0.94"
+  # painel do Ubuntu (Ubuntu Dock, baseado no Dash to Dock); sem a extensao, o gs_set nao faz nada
+  gs_set org.gnome.shell.extensions.dash-to-dock custom-background-color "true"
+  gs_set org.gnome.shell.extensions.dash-to-dock background-color "'#050506'"
+  gs_set org.gnome.shell.extensions.dash-to-dock transparency-mode "'FIXED'"
+  gs_set org.gnome.shell.extensions.dash-to-dock background-opacity "0.94"
+  gs_set org.gnome.shell.extensions.dash-to-dock custom-theme-shrink "true"
   ok "tema, icones, cursor, fontes, fundo e sons aplicados"
 
   # tema do shell via extensao User Themes

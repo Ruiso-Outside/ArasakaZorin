@@ -1,6 +1,8 @@
 # ARASAKA // Tema completo para Zorin OS
 
-Tema Cyberpunk 2077 / Arasaka para **Zorin OS 17 e 18** (Core/Pro, GNOME), do boot ao terminal.
+Tema Cyberpunk 2077 / Arasaka para **Zorin OS 17 e 18** (Core/Pro, GNOME), do boot ao terminal. Também roda no
+**Ubuntu 24.04** (experimental: o painel é o Ubuntu Dock e o tema base é o Yaru). Os efeitos da extensão Arasaka FX
+precisam do GNOME 45 ou mais novo (Zorin 18 e Ubuntu 24.04).
 Uso pessoal: o logo e o nome Arasaka pertencem à CD PROJEKT RED, e a fonte `cedge1` usa a licença
 FontStruct Non-Commercial.
 
