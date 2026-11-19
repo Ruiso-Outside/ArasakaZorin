@@ -621,6 +621,90 @@ def plymouth_assets():
         save(c, base + f"corner_{name}.png")
 
 
+def grub_bootlog():
+    """theme/grub/arasaka/09_arasaka: painel de validação na caixa do terminal do GRUB (sobre o painel do menu)."""
+    oks = [("Firmware handshake", "ACCEPTED"), ("Secure boot chain", "TRUSTED"), ("Microcode patch level", "CURRENT"),
+           ("Kernel signature", "SHA-512 MATCH"), ("Initramfs integrity", "VERIFIED"), ("Memory sanitization", "COMPLETE"),
+           ("ICE countermeasures", "ARMED"), ("Netwatch uplink", "AUTHORIZED"), ("Operator credentials", "VALIDATED")]
+    rnd = random.Random(2077)
+    hexrows = []
+    for i, tag in enumerate(["KERNEL", "INITRD", "CMDLINE", "NEURAL"]):
+        addr = 0x00100000 + i * 0x00400000
+        bts = " ".join(f"{rnd.randrange(256):02X}" for _ in range(8))
+        hexrows.append((f"0x{addr:08X}", bts, tag))
+    q = lambda t: t.replace("\\", "\\\\").replace('"', '\\"')
+    out = []
+    c = lambda col: out.append(f"  set color_normal={col}/black")
+    e = lambda txt, nl=True: out.append(f'  echo {"" if nl else "-n "}"{q(txt)}"')
+    c("light-red"); e(""); e("  ARASAKA SECURE BOOT LOADER  //  BUILD 2077.18")
+    c("red"); e("  " + "-" * 56)
+    c("dark-gray"); e("  TARGET    ", False); c("white"); out.append('  echo "$chosen"')
+    c("dark-gray"); e("  PLATFORM  ", False); c("light-gray"); out.append('  echo "${grub_cpu}-${grub_platform}   ROOT ${root}"')
+    e("")
+    for a, b in oks:
+        c("dark-gray"); e("  [", False); c("light-green"); e(" OK ", False); c("dark-gray"); e("]  ", False)
+        c("light-gray"); e(a + " ", False); c("dark-gray"); e("." * max(3, 27 - len(a)) + " ", False); c("light-red"); e(b)
+    e("")
+    for addr, bts, tag in hexrows:
+        c("red"); e(f"  {addr}  ", False); c("dark-gray"); e(f"{bts}  ", False); c("light-gray"); e(f"{tag:<8}", False)
+        c("light-green"); e("  MAPPED")
+    e("")
+    c("light-red"); e("  >> ", False); c("white"); e("HANDING OFF TO NEURAL KERNEL", False); c("light-red"); e(" _")
+    e("")
+    c("light-red"); e("  [" + "|" * 36, False); c("dark-gray"); e("." * 10, False); c("light-red"); e("]  78%")
+    body = "\n".join(out)
+    script = f"""#! /bin/sh
+# ARASAKA // painel de validação na caixa do terminal do GRUB (instalado em /etc/grub.d/09_arasaka pelo tema)
+# Gerado por build/build_assets.py (parte "grub"); não edite à mão.
+#
+# Depois que uma entrada é escolhida, o GRUB mostra a caixa do terminal enquanto carrega o kernel e o
+# initramfs, e com o boot silencioso ela ficava vazia. Toda entrada do Linux chama "load_video" logo no
+# começo; este script roda depois do 00_header e redefine essa função: ela carrega o vídeo do mesmo jeito
+# e, em seguida, desenha o logo Arasaka em ASCII e uma "validação de inicialização" colorida.
+# Desligar: ./install.sh --sem-grub-log (ou apague /etc/grub.d/09_arasaka e rode sudo update-grub).
+set -e
+
+cat <<'EOF'
+### ARASAKA: painel de validação de inicialização (tema Arasaka) ###
+function arasaka_boot_log {{
+  set arasaka_saved_color="$color_normal"
+{body}
+  set color_normal="$arasaka_saved_color"
+}}
+EOF
+
+# a mesma função do 00_header, mais o painel no fim
+if [ -n "${{GRUB_VIDEO_BACKEND}}" ]; then
+  cat <<EOF
+function load_video {{
+  insmod ${{GRUB_VIDEO_BACKEND}}
+  arasaka_boot_log
+}}
+EOF
+else
+  cat <<'EOF'
+function load_video {{
+  if [ x$feature_all_video_module = xy ]; then
+    insmod all_video
+  else
+    insmod efi_gop
+    insmod efi_uga
+    insmod ieee1275_fb
+    insmod vbe
+    insmod vga
+    insmod video_bochs
+    insmod video_cirrus
+  fi
+  arasaka_boot_log
+}}
+EOF
+fi
+"""
+    f = T / "grub/arasaka/09_arasaka"
+    f.write_text(script, encoding="utf-8")
+    f.chmod(0o755)
+
+
 def extension_assets():
     """Ícone simbólico (uma cor, recolorido pelo GNOME) que a Arasaka FX põe no botão do menu do Zorin."""
     # o GNOME recolore ícones simbólicos forçando preenchimento em tudo: o anel vira uma coroa preenchida
@@ -1094,6 +1178,7 @@ def main():
         ("logo e icones", icon_assets),
         ("wallpapers", None),
         ("grub", grub_assets),
+        ("grub-log", grub_bootlog),
         ("plymouth", plymouth_assets),
         ("extensao", extension_assets),
         ("cursores", cursor_assets),

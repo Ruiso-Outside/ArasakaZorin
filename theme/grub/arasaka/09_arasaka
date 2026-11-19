@@ -1,0 +1,214 @@
+#! /bin/sh
+# ARASAKA // painel de validação na caixa do terminal do GRUB (instalado em /etc/grub.d/09_arasaka pelo tema)
+# Gerado por build/build_assets.py (parte "grub"); não edite à mão.
+#
+# Depois que uma entrada é escolhida, o GRUB mostra a caixa do terminal enquanto carrega o kernel e o
+# initramfs, e com o boot silencioso ela ficava vazia. Toda entrada do Linux chama "load_video" logo no
+# começo; este script roda depois do 00_header e redefine essa função: ela carrega o vídeo do mesmo jeito
+# e, em seguida, desenha o logo Arasaka em ASCII e uma "validação de inicialização" colorida.
+# Desligar: ./install.sh --sem-grub-log (ou apague /etc/grub.d/09_arasaka e rode sudo update-grub).
+set -e
+
+cat <<'EOF'
+### ARASAKA: painel de validação de inicialização (tema Arasaka) ###
+function arasaka_boot_log {
+  set arasaka_saved_color="$color_normal"
+  set color_normal=light-red/black
+  echo ""
+  echo "  ARASAKA SECURE BOOT LOADER  //  BUILD 2077.18"
+  set color_normal=red/black
+  echo "  --------------------------------------------------------"
+  set color_normal=dark-gray/black
+  echo -n "  TARGET    "
+  set color_normal=white/black
+  echo "$chosen"
+  set color_normal=dark-gray/black
+  echo -n "  PLATFORM  "
+  set color_normal=light-gray/black
+  echo "${grub_cpu}-${grub_platform}   ROOT ${root}"
+  echo ""
+  set color_normal=dark-gray/black
+  echo -n "  ["
+  set color_normal=light-green/black
+  echo -n " OK "
+  set color_normal=dark-gray/black
+  echo -n "]  "
+  set color_normal=light-gray/black
+  echo -n "Firmware handshake "
+  set color_normal=dark-gray/black
+  echo -n "......... "
+  set color_normal=light-red/black
+  echo "ACCEPTED"
+  set color_normal=dark-gray/black
+  echo -n "  ["
+  set color_normal=light-green/black
+  echo -n " OK "
+  set color_normal=dark-gray/black
+  echo -n "]  "
+  set color_normal=light-gray/black
+  echo -n "Secure boot chain "
+  set color_normal=dark-gray/black
+  echo -n ".......... "
+  set color_normal=light-red/black
+  echo "TRUSTED"
+  set color_normal=dark-gray/black
+  echo -n "  ["
+  set color_normal=light-green/black
+  echo -n " OK "
+  set color_normal=dark-gray/black
+  echo -n "]  "
+  set color_normal=light-gray/black
+  echo -n "Microcode patch level "
+  set color_normal=dark-gray/black
+  echo -n "...... "
+  set color_normal=light-red/black
+  echo "CURRENT"
+  set color_normal=dark-gray/black
+  echo -n "  ["
+  set color_normal=light-green/black
+  echo -n " OK "
+  set color_normal=dark-gray/black
+  echo -n "]  "
+  set color_normal=light-gray/black
+  echo -n "Kernel signature "
+  set color_normal=dark-gray/black
+  echo -n "........... "
+  set color_normal=light-red/black
+  echo "SHA-512 MATCH"
+  set color_normal=dark-gray/black
+  echo -n "  ["
+  set color_normal=light-green/black
+  echo -n " OK "
+  set color_normal=dark-gray/black
+  echo -n "]  "
+  set color_normal=light-gray/black
+  echo -n "Initramfs integrity "
+  set color_normal=dark-gray/black
+  echo -n "........ "
+  set color_normal=light-red/black
+  echo "VERIFIED"
+  set color_normal=dark-gray/black
+  echo -n "  ["
+  set color_normal=light-green/black
+  echo -n " OK "
+  set color_normal=dark-gray/black
+  echo -n "]  "
+  set color_normal=light-gray/black
+  echo -n "Memory sanitization "
+  set color_normal=dark-gray/black
+  echo -n "........ "
+  set color_normal=light-red/black
+  echo "COMPLETE"
+  set color_normal=dark-gray/black
+  echo -n "  ["
+  set color_normal=light-green/black
+  echo -n " OK "
+  set color_normal=dark-gray/black
+  echo -n "]  "
+  set color_normal=light-gray/black
+  echo -n "ICE countermeasures "
+  set color_normal=dark-gray/black
+  echo -n "........ "
+  set color_normal=light-red/black
+  echo "ARMED"
+  set color_normal=dark-gray/black
+  echo -n "  ["
+  set color_normal=light-green/black
+  echo -n " OK "
+  set color_normal=dark-gray/black
+  echo -n "]  "
+  set color_normal=light-gray/black
+  echo -n "Netwatch uplink "
+  set color_normal=dark-gray/black
+  echo -n "............ "
+  set color_normal=light-red/black
+  echo "AUTHORIZED"
+  set color_normal=dark-gray/black
+  echo -n "  ["
+  set color_normal=light-green/black
+  echo -n " OK "
+  set color_normal=dark-gray/black
+  echo -n "]  "
+  set color_normal=light-gray/black
+  echo -n "Operator credentials "
+  set color_normal=dark-gray/black
+  echo -n "....... "
+  set color_normal=light-red/black
+  echo "VALIDATED"
+  echo ""
+  set color_normal=red/black
+  echo -n "  0x00100000  "
+  set color_normal=dark-gray/black
+  echo -n "B0 94 22 00 92 13 CE CB  "
+  set color_normal=light-gray/black
+  echo -n "KERNEL  "
+  set color_normal=light-green/black
+  echo "  MAPPED"
+  set color_normal=red/black
+  echo -n "  0x00500000  "
+  set color_normal=dark-gray/black
+  echo -n "2C A4 9E FC 54 56 15 F2  "
+  set color_normal=light-gray/black
+  echo -n "INITRD  "
+  set color_normal=light-green/black
+  echo "  MAPPED"
+  set color_normal=red/black
+  echo -n "  0x00900000  "
+  set color_normal=dark-gray/black
+  echo -n "83 77 D6 9A BB BF 92 C6  "
+  set color_normal=light-gray/black
+  echo -n "CMDLINE "
+  set color_normal=light-green/black
+  echo "  MAPPED"
+  set color_normal=red/black
+  echo -n "  0x00D00000  "
+  set color_normal=dark-gray/black
+  echo -n "61 4E 55 00 BF 95 FC 39  "
+  set color_normal=light-gray/black
+  echo -n "NEURAL  "
+  set color_normal=light-green/black
+  echo "  MAPPED"
+  echo ""
+  set color_normal=light-red/black
+  echo -n "  >> "
+  set color_normal=white/black
+  echo -n "HANDING OFF TO NEURAL KERNEL"
+  set color_normal=light-red/black
+  echo " _"
+  echo ""
+  set color_normal=light-red/black
+  echo -n "  [||||||||||||||||||||||||||||||||||||"
+  set color_normal=dark-gray/black
+  echo -n ".........."
+  set color_normal=light-red/black
+  echo "]  78%"
+  set color_normal="$arasaka_saved_color"
+}
+EOF
+
+# a mesma função do 00_header, mais o painel no fim
+if [ -n "${GRUB_VIDEO_BACKEND}" ]; then
+  cat <<EOF
+function load_video {
+  insmod ${GRUB_VIDEO_BACKEND}
+  arasaka_boot_log
+}
+EOF
+else
+  cat <<'EOF'
+function load_video {
+  if [ x$feature_all_video_module = xy ]; then
+    insmod all_video
+  else
+    insmod efi_gop
+    insmod efi_uga
+    insmod ieee1275_fb
+    insmod vbe
+    insmod vga
+    insmod video_bochs
+    insmod video_cirrus
+  fi
+  arasaka_boot_log
+}
+EOF
+fi

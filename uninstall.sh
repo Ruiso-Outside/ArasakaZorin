@@ -91,6 +91,7 @@ fi
 if grep -q "ARASAKA" /etc/os-release 2>/dev/null; then
   sudo rm -f /etc/os-release && sudo ln -s ../usr/lib/os-release /etc/os-release && ok "nome do sistema restaurado"
 fi
+sudo rm -f /etc/grub.d/09_arasaka  # painel de validação do GRUB (o update-grub abaixo tira do menu)
 if [ -f "$SYS_BK/grub.default" ]; then
   sudo install -m644 "$SYS_BK/grub.default" /etc/default/grub
   sudo rm -rf /boot/grub/themes/arasaka /boot/grub2/themes/arasaka

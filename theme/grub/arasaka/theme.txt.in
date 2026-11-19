@@ -6,10 +6,12 @@ desktop-image: "background.png"
 desktop-color: "#000000"
 terminal-font: "@FONT_MONO@"
 terminal-box: "terminal_box_*.png"
-terminal-left: "10%"
-terminal-top: "12%"
-terminal-width: "80%"
-terminal-height: "76%"
+# caixa do terminal por cima do painel do menu: escolhida a entrada, o painel "vira" o console com o
+# painel de validação (09_arasaka, ~62 colunas x 27 linhas na fonte mono)
+terminal-left: "47%"
+terminal-top: "28%"
+terminal-width: "46%"
+terminal-height: "49%"
 terminal-border: "2"
 
 + boot_menu {
@@ -48,7 +50,7 @@ terminal-border: "2"
 + label {
   id = "__timeout__"
   left = 48%
-  top = 81%
+  top = 83%  # a barra acima sai mais alta que o pedido; o texto fica abaixo dela
   width = 44%
   align = "left"
   color = "#8c8c96"
@@ -58,7 +60,7 @@ terminal-border: "2"
 
 + label {
   left = 48%
-  top = 86%
+  top = 88%
   width = 44%
   align = "left"
   color = "#55555e"

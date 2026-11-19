@@ -13,6 +13,7 @@
 #     --sem-download    nao baixa as fontes Rajdhani / Share Tech Mono
 #     --sem-efeitos     nao instala a extensao Arasaka FX (glitch nas janelas, feixe no fundo, CRT)
 #     --manter-nome     mantem o nome "Zorin OS" no GRUB e em Configuracoes > Sobre
+#     --sem-grub-log    sem o painel de validacao na caixa do GRUB ao carregar o sistema
 #     --grub-oculto     mantem o menu do GRUB escondido
 #     -y                nao pede confirmacao
 # ============================================================
@@ -22,7 +23,7 @@ set -uo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 T="$DIR/theme"
 
-DO_GRUB=1 DO_PLY=1 DO_GDM=1 DO_TERM=1 DO_SND=1 DO_DL=1 DO_FX=1 DO_NAME=1 GRUB_SHOW=1 ASSUME_YES=0
+DO_GRUB=1 DO_PLY=1 DO_GDM=1 DO_TERM=1 DO_SND=1 DO_DL=1 DO_FX=1 DO_NAME=1 DO_GLOG=1 GRUB_SHOW=1 ASSUME_YES=0
 for a in "$@"; do
   case "$a" in
     --sem-grub) DO_GRUB=0 ;;
@@ -33,6 +34,7 @@ for a in "$@"; do
     --sem-download) DO_DL=0 ;;
     --sem-efeitos) DO_FX=0 ;;
     --manter-nome) DO_NAME=0 ;;
+    --sem-grub-log) DO_GLOG=0 ;;
     --grub-oculto) GRUB_SHOW=0 ;;
     -y|--yes) ASSUME_YES=1 ;;
     -h|--help) sed -n '2,20p' "$0"; exit 0 ;;
@@ -596,6 +598,9 @@ grub() {
       "$T/grub/arasaka/theme.txt.in" > "$tmp/theme.txt"
   sudo install -m644 "$tmp"/*.pf2 "$tmp/theme.txt" "$dst/"
   rm -rf "$tmp"
+  # painel de validação na caixa do terminal enquanto o kernel carrega (redefine load_video; ver o script)
+  if [ "$DO_GLOG" -eq 1 ]; then sudo install -m755 "$T/grub/arasaka/09_arasaka" /etc/grub.d/09_arasaka
+  else sudo rm -f /etc/grub.d/09_arasaka; fi
 
   local cfg=/etc/default/grub
   backup_sys "$cfg" grub.default
