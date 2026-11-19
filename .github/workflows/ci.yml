@@ -1,0 +1,25 @@
+# Testes: rodam a cada push na main e antes de cada Release (o Release não sai se falharem).
+name: Testes
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sintaxe dos scripts
+        run: |
+          for f in install.sh uninstall.sh theme/terminal/arasaka-bashrc.sh theme/bin/*; do bash -n "$f"; done
+          python3 -m py_compile build/build_assets.py
+      - name: Arquivos do tema presentes
+        run: |
+          for f in VERSION theme/backgrounds/arasaka-core.png theme/gtk/Arasaka/index.theme theme/shell/arasaka-shell.css \
+                   theme/plymouth/arasaka/arasaka.script theme/grub/arasaka/theme.txt.in theme/fonts/cedge1.ttf \
+                   theme/extension/arasaka-fx@arasaka.local/extension.js theme/extension/arasaka-fx@arasaka.local/metadata.json; do
+            test -s "$f" || { echo "::error::faltando: $f"; exit 1; }
+          done
+          python3 -c "import json; json.load(open('theme/extension/arasaka-fx@arasaka.local/metadata.json'))"
+          grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' VERSION || { echo "::error::VERSION inválida"; exit 1; }

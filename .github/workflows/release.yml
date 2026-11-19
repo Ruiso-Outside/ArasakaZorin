@@ -7,7 +7,10 @@ on:
 permissions:
   contents: write
 jobs:
+  testes:
+    uses: ./.github/workflows/ci.yml
   release:
+    needs: testes
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
